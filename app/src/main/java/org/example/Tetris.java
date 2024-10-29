@@ -2,6 +2,10 @@ package org.example;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -10,10 +14,17 @@ import java.util.Random;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Type;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class Tetris extends JFrame {
     private GamePanel gamePanel;
@@ -27,7 +38,12 @@ public class Tetris extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
 
-        gamePanel = new GamePanel();
+        try {
+            gamePanel = new GamePanel();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
         add(gamePanel);
 
@@ -939,7 +955,7 @@ class GamePanel extends JPanel implements KeyListener{
         }
     }
 
-
+    class ScoreMap extends HashMap<Integer, HashMap<String, Integer>> {}
     // #paths
 
     String resourcePath = "src/main/resources/";
@@ -966,6 +982,7 @@ class GamePanel extends JPanel implements KeyListener{
     ImageProcessor pinkBlock;
     ImageProcessor errorBlock;
     
+    ArrayList<?> scoreMap;
 
     Menu menu = new Menu();
 
@@ -986,13 +1003,48 @@ class GamePanel extends JPanel implements KeyListener{
         */
 
 
-    public GamePanel(){
+    public GamePanel() throws IOException{
 
         try {
             gameFont = Font.createFont(Font.TRUETYPE_FONT, new BufferedInputStream(new FileInputStream(pixelmixFontPath)));
             gameFontBold = Font.createFont(Font.TRUETYPE_FONT, new BufferedInputStream(new FileInputStream(pixelmixBoldFontPath)));
         } catch (Exception e) {
             e.printStackTrace();
+        }
+
+        try {
+            BufferedReader scoreReader = Files.newBufferedReader(Paths.get(resourcePath+"data/scores.json"));
+            Gson gson = new Gson();
+
+            String json = scoreReader.readLine();
+
+            System.out.println(json);
+
+            Type scoreMapType = new TypeToken<HashMap<Integer, HashMap<String, Integer>>>(){}.getType();
+            HashMap<Integer, HashMap<String, Integer>> scoreMap = gson.fromJson(json, scoreMapType);
+
+            
+            scoreReader.close();
+
+            System.out.println(scoreMap.get(0).keySet());
+            
+        } catch (Exception e) {
+            String defaultJson;
+            HashMap<Integer, HashMap<String, Integer>> jsonMap =new HashMap<Integer, HashMap<String, Integer>>();
+            HashMap<String, Integer> defaultItem = new HashMap<String, Integer>();
+            defaultItem.put("------", 0);
+
+            for(int i = 0; i < 5; i++) {
+                
+                jsonMap.put(i, defaultItem);
+            }
+
+            defaultJson = new Gson().toJson(jsonMap);
+
+            FileWriter scoreFile = new FileWriter(resourcePath+"data/scores.json");
+            BufferedWriter scoreWriter = new BufferedWriter(scoreFile);
+            scoreWriter.write(defaultJson, 0, defaultJson.length());
+            scoreWriter.close();
         }
 
         redBlock = new ImageProcessor(blockImagePath,0f);
