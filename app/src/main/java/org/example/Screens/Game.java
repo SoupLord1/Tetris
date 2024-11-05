@@ -2,6 +2,7 @@ package org.example.Screens;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Random;
@@ -645,28 +646,28 @@ public class Game {
         }
     }
 
-    public void keyPressHandler(char key) {
-        if (key == 'a') {
+    public void keyPressHandler(int keyCode) {
+        if (keyCode == KeyEvent.VK_A) {
             moveDirection = "left";
         }
-        if (key == 'd') {
+        if (keyCode == KeyEvent.VK_D) {
             moveDirection = "right";
         }
-        if (key == 's') {
+        if (keyCode == KeyEvent.VK_S) {
             if (currentUpdateCooldown != fastCooldownSpeed) {
                 currentUpdateCooldown = fastCooldownSpeed;
                 updateCooldown = 0;
             }
         }
-        if (key == 'w') {
+        if (keyCode == KeyEvent.VK_W) {
             dropPiece = true;
         }
 
-        if (key == 'q') {
+        if (keyCode == KeyEvent.VK_Q) {
             rotationDirection = "counterClockwise";
         }
 
-        if (key == 'e') {
+        if (keyCode == KeyEvent.VK_E) {
             rotationDirection = "clockwise";
         }
     }

@@ -6,14 +6,7 @@ import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.lang.reflect.Type;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -23,9 +16,6 @@ import org.example.Screens.Game;
 import org.example.Screens.Menu;
 import org.example.Screens.Scores;
 import org.example.Utils.ImageProcessor;
-
-import com.google.common.reflect.TypeToken;
-import com.google.gson.Gson;
 
 public class GamePanel extends JPanel implements KeyListener{
 
@@ -65,7 +55,7 @@ public class GamePanel extends JPanel implements KeyListener{
 
     public Game game = new Game(this);
 
-    Scores scores =  new Scores();
+    Scores scores =  new Scores(this);
 
     /*  BUG
         *  
@@ -88,58 +78,7 @@ public class GamePanel extends JPanel implements KeyListener{
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        try {
-            BufferedReader scoreReader = Files.newBufferedReader(Paths.get(resourcePath+"data/scores.json"));
-            Gson gson = new Gson();
-
-            String json = scoreReader.readLine();
-
-            System.out.println(json);
-
-            Type scoreMapType = new TypeToken<HashMap<Integer, HashMap<String, Integer>>>(){}.getType();
-            HashMap<Integer, HashMap<String, Integer>> scoreMap = gson.fromJson(json, scoreMapType);
-
             
-            scoreReader.close();
-
-            System.out.println(scoreMap.get(0).keySet());
-            
-        } catch (Exception e) {
-            // String defaultJson;
-            // HashMap<Integer, HashMap<String, Integer>> jsonMap =new HashMap<Integer, HashMap<String, Integer>>();
-            // HashMap<String, Integer> defaultItem = new HashMap<String, Integer>();
-            // defaultItem.put("------", 0);
-
-            // for(int i = 0; i < 5; i++) {
-                
-            //     jsonMap.put(i, defaultItem);
-            // }
-
-            // defaultJson = new Gson().toJson(jsonMap);
-
-            // FileWriter scoreFile;
-            // try {
-            //     scoreFile = new FileWriter(resourcePath+"data/scores.json");
-            // } catch (IOException e1) {
-            //     // TODO Auto-generated catch block
-            //     e1.printStackTrace();
-            // }
-            // BufferedWriter scoreWriter = new BufferedWriter(scoreFile);
-            // try {
-            //     scoreWriter.write(defaultJson, 0, defaultJson.length());
-            // } catch (IOException e1) {
-            //     // TODO Auto-generated catch block
-            //     e1.printStackTrace();
-            // }
-            // try {
-            //     scoreWriter.close();
-            // } catch (IOException e1) {
-            //     // TODO Auto-generated catch block
-            //     e1.printStackTrace();
-            // }
-        }
-
         redBlock = new ImageProcessor(blockImagePath,0f);
         orangeBlock = new ImageProcessor(blockImagePath,0.06f);
         yellowBlock = new ImageProcessor(blockImagePath,0.14f);
@@ -214,7 +153,7 @@ public class GamePanel extends JPanel implements KeyListener{
 
         switch (screen) {
             case "game":
-                game.keyPressHandler(key);;
+                game.keyPressHandler(keyCode);;
                 break;
             
             case "menu": 

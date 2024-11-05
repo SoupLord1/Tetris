@@ -9,10 +9,9 @@ import java.awt.event.ActionListener;
 
 
 public class Tetris extends JFrame {
-    private GamePanel gamePanel;
     private static int resolution = 64;
 
-    public static final Vector screenSize = new Vector(resolution * 32, (resolution * 20)-32);
+    public static final Vector screenSize = new Vector(resolution * 32, (resolution * 19));
 
     public Tetris() {
         setTitle("Tetris");
@@ -20,7 +19,7 @@ public class Tetris extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
 
-        gamePanel = new GamePanel();
+        GamePanel gamePanel = new GamePanel();
 
         add(gamePanel);
 
