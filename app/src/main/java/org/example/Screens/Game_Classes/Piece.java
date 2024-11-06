@@ -15,25 +15,25 @@ public class Piece {
 
 
     //base coords of all the blocks in each rotation phase
-    public int[][][] lBlockRotations = {
+    public static int[][][] lBlockRotations = {
         {{5,0},{5,1},{5,2},{6,2}},{{4,1},{5,1},{6,1},{4,2}},{{4,0},{5,0},{5,1},{5,2}},{{4,1},{5,1},{6,1},{6,0}}
     };
-    public int[][][] rlBlockRotations = {
+    public static int[][][] rlBlockRotations = {
         {{5,0},{5,1},{5,2},{4,2}},{{4,1},{4,0},{5,1},{6,1}},{{5,0},{5,1},{5,2},{6,0}},{{4,1},{5,1},{6,1},{6,2}}
     };
-    public int[][][] squiglyRotations = {
+    public static int[][][] squiglyRotations = {
         {{4,1},{5,1},{5,2},{6,2}},{{5,0},{5,1},{4,1},{4,2}},{{4,0},{5,0},{5,1},{6,1}},{{5,1},{5,2},{6,0},{6,1}}
     };
-    public int[][][] rsquiglyRotations = {
+    public static int[][][] rsquiglyRotations = {
         {{4,2},{5,2},{5,1},{6,1}},{{4,0},{4,1},{5,1},{5,2}},{{4,1},{5,1},{5,0},{6,0}},{{5,1},{5,0},{6,1},{6,2}}
     };
-    public int[][][] cubeRotations = {
+    public static int[][][] cubeRotations = {
         {{4,0},{5,0},{4,1},{5,1}},{{4,0},{5,0},{4,1},{5,1}},{{4,0},{5,0},{4,1},{5,1}},{{4,0},{5,0},{4,1},{5,1}}
     };
-    public int[][][] lineRotations = {
+    public static int[][][] lineRotations = {
         {{3,2},{4,2},{5,2},{6,2}},{{5,0},{5,1},{5,2},{5,3}},{{4,2},{5,2},{6,2},{7,2}},{{5,1},{5,2},{5,3},{5,4}}
     };
-    public int[][][] tBlockRotations = {
+    public static int[][][] tBlockRotations = {
         {{4,1},{5,1},{6,1},{5,2}},{{4,1},{5,1},{5,0},{5,2}},{{4,1},{5,1},{5,0},{6,1}},{{6,1},{5,1},{5,0},{5,2}}
     };
 
@@ -212,14 +212,73 @@ public class Piece {
         Random randomizer = new Random();
         return pieceTypes[randomizer.nextInt(pieceTypes.length)];
     }
+    
     public String nextPiece(String[] list) {
         String piece = list[player.piecePointer];
         player.piecePointer++;
         return piece;
     }
+    
     public static void GeneratePieceList(String[] list){
         for (int i = 0; i < list.length; i++) {
             list[i] = RandomPiece();
         }
+    }
+
+    public static Vector getNextPiece(int[][] nextPieceBoard, String[] pieceList, int pointer) {
+        Vector offset = new Vector(0, 0);
+        int color = 0;
+        int rotation = 0;
+        int[][] selectedPiece = new int[nextPieceBoard.length][nextPieceBoard[0].length];
+
+        String type = pieceList[pointer];
+        //changes the rotation of a piece
+        if (type == "l-block") {
+            color = 5;
+            selectedPiece = lBlockRotations[rotation];
+            offset.y = 32;
+            offset.x = -64;
+
+        }
+        if (type == "reverse-l-block") {
+            color = 4;
+            selectedPiece = rlBlockRotations[rotation];
+            offset.y = 32;
+
+        }
+        if (type == "squigly") {
+            color = 4;
+            selectedPiece = squiglyRotations[rotation];
+            offset.x = -32;
+
+        }
+        if (type == "reverse-squigly") {
+            color = 5;
+            selectedPiece = rsquiglyRotations[rotation];
+            offset.x = -32;
+
+        }
+        if (type == "cube") {
+            color = 3;
+            selectedPiece = cubeRotations[rotation];
+            offset.y = 64;
+        }
+        if (type == "line") {
+            color = 1;
+            selectedPiece = lineRotations[rotation];
+            offset.y = -32;
+        }
+        if (type == "t-block") {
+            color = 3;
+            selectedPiece = tBlockRotations[rotation];
+            offset.x = -32;
+        }
+
+        nextPieceBoard[selectedPiece[0][0]-3][selectedPiece[0][1]] = color;
+        nextPieceBoard[selectedPiece[1][0]-3][selectedPiece[1][1]] = color;
+        nextPieceBoard[selectedPiece[2][0]-3][selectedPiece[2][1]] = color;
+        nextPieceBoard[selectedPiece[3][0]-3][selectedPiece[3][1]] = color;
+        
+        return offset;
     }
 }

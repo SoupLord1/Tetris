@@ -296,7 +296,7 @@ public class Game {
         }
     }
     
-    public void renderBoard(Graphics g, int[][] board, Vector location) {
+    public void renderBoard(Graphics g, int[][] board, Vector location, Vector offset) {
 
         for(int i = 0; i < board.length;i++) {
             for (int j = 0; j < board[0].length; j++) {
@@ -332,7 +332,7 @@ public class Game {
                             break;
                     }
 
-                    g.drawImage(block, (i+location.x)*resolution, ((j+location.y)-1)*resolution, null);
+                    g.drawImage(block, (i+location.x)*resolution + offset.x, ((j+location.y)-1)*resolution + offset.y, null);
 
                 }
             }
@@ -340,24 +340,49 @@ public class Game {
     }
 
     public void renderNextPiece(Graphics g, Player player) {
+        Vector offset = new Vector(0, 0);
         int[][] nextPieceBoard = new int[4][4];  
-        nextPieceBoard[0][0] = 2;
-        nextPieceBoard[3][3] = 2;
+        offset = Piece.getNextPiece(nextPieceBoard, pieceList, player.piecePointer);
 
         g.setColor(Color.WHITE);
-        g.fillRect(gamePanel.getWidth() - 7*resolution, resolution, resolution*4, resolution*4);
+        g.fillRect(gamePanel.getWidth() - 7*resolution, resolution*2, resolution*4, resolution*4);
 
-        renderBoard(g, nextPieceBoard, new Vector(gamePanel.getWidth()/resolution - 7, 2));
+        g.setFont(gamePanel.gameFont.deriveFont(55f));
+        g.setColor(Color.WHITE);
+
+        g.drawString("Next", gamePanel.getWidth() - resolution*6 - 16, resolution+32);
+        
+        renderBoard(g, nextPieceBoard, new Vector(gamePanel.getWidth()/resolution - 7, 3), offset);
     }
 
+    public void renderHold(Graphics g, Player player) {
+        int[][] holdPieceBoard = new int[4][4];
+        Vector offset = new Vector(0, 0);
+        
+
+
+        offset = Piece.getNextPiece(holdPieceBoard, pieceList, player.piecePointer-1);
+        
+        g.setColor(Color.WHITE);
+        g.fillRect(3*resolution, resolution*2, resolution*4, resolution*4);
+
+        g.setFont(gamePanel.gameFont.deriveFont(55f));
+        g.setColor(Color.WHITE);
+
+        g.drawString("Hold", resolution*4 -16, resolution+32);
+        
+        renderBoard(g, holdPieceBoard, new Vector(3, 3), offset);
+
+    }
+    
     public void draw(Graphics g) {
         g.setColor(Color.BLACK);
 
         switch (mode) {
             case "1 player":
 
-                renderBoard(g, player1.playerBoard,new Vector(11, 0));
-                renderBoard(g, player1.gameBoard, new Vector(11, 0));
+                renderBoard(g, player1.playerBoard,new Vector(11, 0), new Vector(0, 0));
+                renderBoard(g, player1.gameBoard, new Vector(11, 0), new Vector(0, 0));
                 //left and right border
                 g.fillRect(0, 0, resolution*11, gamePanel.getHeight());
                 g.fillRect(gamePanel.getWidth()-resolution*11, 0, resolution*11, gamePanel.getHeight());
@@ -371,19 +396,20 @@ public class Game {
                 g.setColor(Color.WHITE);
                 g.drawString("Lines Cleared: "+player1.linesScore, resolution*1, resolution*17);
                 g.drawString("Score: "+player1.pointsScore, resolution*22, resolution*17);
-                g.drawString("Level: "+player1.level, 30, 60);  
+                g.drawString("Level: "+player1.level, 30, resolution*8);  
 
                 renderNextPiece(g, player1);
+                renderHold(g, player1);
 
                 break;
 
             case "2 player":
 
-                renderBoard(g, player1.playerBoard, new Vector(4, 0));
-                renderBoard(g, player1.gameBoard, new Vector(4, 0));
+                renderBoard(g, player1.playerBoard, new Vector(4, 0), new Vector(0, 0));
+                renderBoard(g, player1.gameBoard, new Vector(4, 0), new Vector(0, 0));
 
-                renderBoard(g, player2.playerBoard, new Vector(18, 0));
-                renderBoard(g, player2.gameBoard, new Vector(18, 0));
+                renderBoard(g, player2.playerBoard, new Vector(18, 0), new Vector(0, 0));
+                renderBoard(g, player2.gameBoard, new Vector(18, 0), new Vector(0, 0));
 
                 //left and right border
                 g.fillRect(0, 0, resolution*4, gamePanel.getHeight());

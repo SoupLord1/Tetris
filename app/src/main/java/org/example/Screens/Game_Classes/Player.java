@@ -9,6 +9,7 @@ public class Player {
     private final Vector boardResolution = new Vector(10, 19);
     public final static int defaultUpdateSpeed = 128;
     public final static int defaultMovementTimeout = 16;
+
     public int linesScore = 0;
     public int pointsScore = 0;
     public int level = 0;
@@ -46,6 +47,8 @@ public class Player {
 
 
     public boolean dropPiece = false;
+
+    public boolean ableToHold = true;
 
     Game game;
 
