@@ -5,22 +5,23 @@ import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Random;
 
 import org.example.GamePanel;
+import org.example.Screens.Game_Classes.Line;
+import org.example.Screens.Game_Classes.Piece;
+import org.example.Screens.Game_Classes.Player;
 import org.example.Utils.*;;
 
 public class Game {
 
     private final int resolution = 64;
     private final Vector boardResolution = new Vector(10, 19);
-    public final int defaultUpdateSpeed = 128;
-    public final int defaultMovementTimeout = 16;
+
 
     public String[] pieceList = new String[5_000]; 
 
-    Player player1 = new Player();
-    Player player2 = new Player();
+    Player player1 = new Player(this);
+    Player player2 = new Player(this);
 
 
     private boolean gameOver = false;
@@ -36,304 +37,6 @@ public class Game {
             
     }
 
-    class Player {
-        public int linesScore = 0;
-        public int pointsScore = 0;
-        public int level = 0;
-        public int linesPerLevel = 16;
-        public int levelSpeedUp = (16*level);
-
-        public int updateCooldown = 0;
-
-        public int fastCooldownSpeed = (defaultUpdateSpeed - levelSpeedUp)/4;
-        public int currentUpdateCooldown = defaultUpdateSpeed - levelSpeedUp;
-
-        public int movementTimeout = 0;
-
-        public int[][] gameBoard = new int[boardResolution.x][boardResolution.y];
-        public int[][] lineClearBuffer = new int[boardResolution.x][boardResolution.y];
-        public int[][] playerBoard = new int[boardResolution.x][boardResolution.y];
-        public int[][] playerBoardBuffer = new int[boardResolution.x][boardResolution.y];
-        public int[]  playerShiftBuffer = new int[boardResolution.x];
-
-        public boolean readyToPlace = false;
-        public int placeHeight = 0;
-
-        public String moveDirection = "none"; // left/right
-        public String rotationDirection = "none"; // clockwise/counterclockwise
-
-        public boolean allowedToMoveRight;
-        public boolean allowedToMoveLeft;
-
-        public ArrayList<Line> allLines = new ArrayList<Line>();
-
-        public int lineClearAnimationCooldown = 0;
-        public int defaultLineClearAnimationCooldown = 8;
-        public Piece playerPiece;
-        public int piecePointer = 0;
-
-
-        public boolean dropPiece = false;
-
-
-        public Player() {
-
-        }
-
-        public void start() {
-            playerPiece = new Piece(this);
-        }
-    }
-
-    class Piece {
-        
-        
-        public static final String[] pieceTypes = {"l-block", "reverse-l-block", "squigly", "reverse-squigly", "cube", "line","t-block"};
-        public int[] translations = {0,0};
-        public String type;
-        public int rotation = 0;
-        Player player;
-
-
-        //base coords of all the blocks in each rotation phase
-        public int[][][] lBlockRotations = {
-            {{5,0},{5,1},{5,2},{6,2}},{{4,1},{5,1},{6,1},{4,2}},{{4,0},{5,0},{5,1},{5,2}},{{4,1},{5,1},{6,1},{6,0}}
-        };
-        public int[][][] rlBlockRotations = {
-            {{5,0},{5,1},{5,2},{4,2}},{{4,1},{4,0},{5,1},{6,1}},{{5,0},{5,1},{5,2},{6,0}},{{4,1},{5,1},{6,1},{6,2}}
-        };
-        public int[][][] squiglyRotations = {
-            {{4,1},{5,1},{5,2},{6,2}},{{5,0},{5,1},{4,1},{4,2}},{{4,0},{5,0},{5,1},{6,1}},{{5,1},{5,2},{6,0},{6,1}}
-        };
-        public int[][][] rsquiglyRotations = {
-            {{4,2},{5,2},{5,1},{6,1}},{{4,0},{4,1},{5,1},{5,2}},{{4,1},{5,1},{5,0},{6,0}},{{5,1},{5,0},{6,1},{6,2}}
-        };
-        public int[][][] cubeRotations = {
-            {{4,0},{5,0},{4,1},{5,1}},{{4,0},{5,0},{4,1},{5,1}},{{4,0},{5,0},{4,1},{5,1}},{{4,0},{5,0},{4,1},{5,1}}
-        };
-        public int[][][] lineRotations = {
-            {{3,2},{4,2},{5,2},{6,2}},{{5,0},{5,1},{5,2},{5,3}},{{4,2},{5,2},{6,2},{7,2}},{{5,1},{5,2},{5,3},{5,4}}
-        };
-        public int[][][] tBlockRotations = {
-            {{4,1},{5,1},{6,1},{5,2}},{{4,1},{5,1},{5,0},{5,2}},{{4,1},{5,1},{5,0},{6,1}},{{6,1},{5,1},{5,0},{5,2}}
-        };
-
-        public Piece(Player player) {
-
-            this.player = player;
-
-            type = nextPiece();
-
-            if (type == "squigly" || type == "reverse-squigly" || type == "t-block") {
-                translations[1]=-1;
-            }
-            if (type == "line") {
-                translations[1]=-2;
-            }
-
-            initialPieceRender();
-        }
-
-        public void renderPiece(){
-            int color = 8418457;
-            int[][] newRotation = new int[4][4];
-            
-            //changes the rotation of a piece
-            if (type == "l-block") {
-                color = 5;
-                newRotation = lBlockRotations[rotation];
-            }
-            if (type == "reverse-l-block") {
-                color = 4;
-                newRotation = rlBlockRotations[rotation];
-            }
-            if (type == "squigly") {
-                color = 4;
-                newRotation = squiglyRotations[rotation];
-            }
-            if (type == "reverse-squigly") {
-                color = 5;
-                newRotation = rsquiglyRotations[rotation];
-            }
-            if (type == "cube") {
-                color = 3;
-                newRotation = cubeRotations[rotation];
-            }
-            if (type == "line") {
-                color = 1;
-                newRotation = lineRotations[rotation];
-            }
-            if (type == "t-block") {
-                color = 3;
-                newRotation = tBlockRotations[rotation];
-            }
-
-            //resets the playboard for the new piece rotation
-
-            player.playerBoard = new int[boardResolution.x][boardResolution.y];
-
-            //adds the coordinate translations to the piece to put it in the correct spot
-            player.playerBoard[newRotation[0][0]+translations[0]][newRotation[0][1]+translations[1]] = color;
-            player.playerBoard[newRotation[1][0]+translations[0]][newRotation[1][1]+translations[1]] = color;
-            player.playerBoard[newRotation[2][0]+translations[0]][newRotation[2][1]+translations[1]] = color;
-            player.playerBoard[newRotation[3][0]+translations[0]][newRotation[3][1]+translations[1]] = color;
-        }
-
-        public String rotatePiece(String direction){
-
-            boolean allowedToRotateClockwise = true;
-            boolean allowedToRotateCounterClockwise = true;
-
-            if (direction == "none") {
-                return "none";
-            }
-
-            if (translations[1] < 0) {
-                allowedToRotateCounterClockwise = false;
-                allowedToRotateClockwise = false;;
-            }
-
-            if (type == "t-block" || type == "squigly" || type == "reverse-squigly" || type == "reverse-l-block" || type == "l-block" ) {
-                if (translations[0] == -5 || translations[0] == 4) {
-                    allowedToRotateCounterClockwise = false;
-                    allowedToRotateClockwise = false;;
-                }
-            }
-
-            //line rotation exception horror show
-            if (type == "line") {
-                if (translations[0] <= -4) {
-                    if (rotation == 1) {
-                        if (translations[0] == -5) {
-                            allowedToRotateCounterClockwise = false;
-                            allowedToRotateClockwise = false;
-                        } else {
-                            allowedToRotateCounterClockwise = false;
-                            allowedToRotateClockwise = true;
-                        }
-                    } else if (rotation == 2) {
-                        allowedToRotateCounterClockwise = true;
-                        allowedToRotateClockwise = true;
-                    } else if (rotation == 3) {
-                        allowedToRotateCounterClockwise = false;
-                        allowedToRotateClockwise = false;
-                    } else {
-                        allowedToRotateClockwise = false;
-                    }
-                    
-                    
-                }
-                if(translations[0] >= 3) {
-                    if (rotation == 0) {
-                        
-                        if (translations[0] == 3) {
-                            allowedToRotateCounterClockwise = true;
-                            allowedToRotateClockwise = true;
-                        } else {
-                            allowedToRotateCounterClockwise = false;
-                            allowedToRotateClockwise = true;
-                        }
-                    } else if (rotation == 1) {
-                        if (translations[0] == 4) {
-                            allowedToRotateCounterClockwise = false;
-                            allowedToRotateClockwise = false;
-                        } else {
-                            allowedToRotateCounterClockwise = true;
-                            allowedToRotateClockwise = false;
-                        }
-                        
-                    } else if (rotation == 2) {
-                        allowedToRotateCounterClockwise = true;
-                        allowedToRotateClockwise = true;
-                    } else if (rotation == 3) {
-                        if (translations[0] == 4) {
-                            allowedToRotateCounterClockwise = false;
-                            allowedToRotateClockwise = false;
-                        } else {
-                            allowedToRotateCounterClockwise = false;
-                            allowedToRotateClockwise = true;
-                        }
-                        
-                    } else {
-                        allowedToRotateClockwise = false;
-                    }
-                        
-                    
-                    
-                }
-            }
-
-
-            if (direction == "clockwise" && allowedToRotateClockwise) {
-                if (rotation != lBlockRotations.length-1) {
-                    rotation++;
-                } else {
-                    rotation = 0;
-                }
-            }
-            if (direction == "counterClockwise" && allowedToRotateCounterClockwise) {
-                if (rotation != 0) {
-                    rotation--;
-                } else {
-                    rotation = lBlockRotations.length-1;
-                }
-            }
-
-
-
-            renderPiece();
-            return "none";
-        }
-
-        public void initialPieceRender() {
-            renderPiece();
-        }
-        
-        public static String RandomPiece() {
-            Random randomizer = new Random();
-            return pieceTypes[randomizer.nextInt(pieceTypes.length)];
-        }
-        public String nextPiece() {
-            String piece = pieceList[player.piecePointer];
-            player.piecePointer++;
-            return piece;
-        }
-        public static void GeneratePieceList(String[] list){
-            for (int i = 0; i < list.length; i++) {
-                list[i] = RandomPiece();
-            }
-        }
-    }
-
-    class Line {
-        int animationCooldown = 0;
-        int defaultAnimationCooldown = 10000;
-        int animationLoops = 5;
-        int[] lineAnimationPosition = {4,5};
-        int linePosition;
-        Player player;
-
-        public Line(int linePosition, Player player) {
-            this.player = player;
-            this.linePosition = linePosition;
-        }
-
-        public void animate() {
-            player.gameBoard[lineAnimationPosition[0]][linePosition] = 0;
-            player.gameBoard[lineAnimationPosition[1]][linePosition] = 0;
-
-            if (lineAnimationPosition[0] > 0) {
-                lineAnimationPosition[0]--;
-            }
-            if (lineAnimationPosition[1] < 9) {
-                lineAnimationPosition[1]++;
-            }
-
-            animationLoops--;
-            
-        }
-    }
-    
     public void movePiece(Player player) {
         
         if (player.moveDirection == "none") {  
@@ -401,7 +104,7 @@ public class Game {
             player.playerBoardBuffer = new int[boardResolution.x][boardResolution.y];
 
             player.playerPiece.translations[0]++;
-            player.movementTimeout = defaultMovementTimeout;
+            player.movementTimeout = Player.defaultMovementTimeout;
             player.moveDirection = "none";
         }   
 
@@ -417,7 +120,7 @@ public class Game {
             player.playerBoardBuffer = new int[boardResolution.x][boardResolution.y];
 
             player.playerPiece.translations[0]--;
-            player.movementTimeout = defaultMovementTimeout;
+            player.movementTimeout = Player.defaultMovementTimeout;
             player.moveDirection = "none";
             
         }   
@@ -466,7 +169,7 @@ public class Game {
             player.playerPiece.translations[1]++;
 
         } else {
-            player.movementTimeout = defaultMovementTimeout;
+            player.movementTimeout = Player.defaultMovementTimeout;
             for(int i = 0; i < player.playerBoard.length;i++) {
                 for (int j = 0; j < player.playerBoard[0].length; j++) {
                     if (player.gameBoard[i][j] == 0) {
@@ -477,12 +180,12 @@ public class Game {
 
             player.dropPiece = false;
 
-            player.currentUpdateCooldown = defaultUpdateSpeed - player.levelSpeedUp;
+            player.currentUpdateCooldown = Player.defaultUpdateSpeed - player.levelSpeedUp;
 
 
             player.playerBoard = new int[boardResolution.x][boardResolution.y];
 
-            player.playerPiece = new Piece(player);
+            player.playerPiece = new Piece(player, pieceList);
             scanForLines(player);
         }
 
@@ -685,12 +388,8 @@ public class Game {
 
                 renderBoard(g, player2.playerBoard, 18);
                 renderBoard(g, player2.gameBoard, 18);
-        
-                // g.setFont(gamePanel.gameFont.deriveFont(55f));
-                // g.setColor(Color.WHITE);
-                // g.drawString("Lines Cleared: "+linesScore, resolution*1, resolution*17);
-                // g.drawString("Score: "+pointsScore, resolution*22, resolution*17);
-                // g.drawString("Level: "+level, 30, 60);  
+                    
+                
                 break;
             default:
                 break;
@@ -704,7 +403,7 @@ public class Game {
         if (!gameOver) {
             
             player1.levelSpeedUp = (8*player1.level);
-            player1.fastCooldownSpeed = (defaultUpdateSpeed - player1.levelSpeedUp)/4;
+            player1.fastCooldownSpeed = (Player.defaultUpdateSpeed - player1.levelSpeedUp)/4;
 
             lineAnimation(player1);
 
@@ -740,7 +439,7 @@ public class Game {
 
             if (mode == "2 player") {
                 player2.levelSpeedUp = (8*player2.level);
-                player2.fastCooldownSpeed = (defaultUpdateSpeed - player2.levelSpeedUp)/4;
+                player2.fastCooldownSpeed = (Player.defaultUpdateSpeed - player2.levelSpeedUp)/4;
     
                 lineAnimation(player2);
     
@@ -835,11 +534,11 @@ public class Game {
     
     public void keyReleasedHandler(int keyCode) {
         if (keyCode == KeyEvent.VK_S) {
-            player1.currentUpdateCooldown = defaultUpdateSpeed - player1.levelSpeedUp;
+            player1.currentUpdateCooldown = Player.defaultUpdateSpeed - player1.levelSpeedUp;
             player1.updateCooldown = 0;
         }
         if (keyCode == KeyEvent.VK_K) {
-            player2.currentUpdateCooldown = defaultUpdateSpeed - player1.levelSpeedUp;
+            player2.currentUpdateCooldown = Player.defaultUpdateSpeed - player1.levelSpeedUp;
             player2.updateCooldown = 0;
         }
     }
