@@ -10,7 +10,7 @@ import org.example.GamePanel;
 import org.example.Screens.Game_Classes.Line;
 import org.example.Screens.Game_Classes.Piece;
 import org.example.Screens.Game_Classes.Player;
-import org.example.Utils.*;;
+import org.example.Utils.*;
 
 public class Game {
 
