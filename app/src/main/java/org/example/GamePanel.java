@@ -53,7 +53,7 @@ public class GamePanel extends JPanel implements KeyListener{
 
     Menu menu = new Menu(this);
 
-    public Game game = new Game(this);
+    public Game game = new Game(this, "1 player");
 
     Scores scores =  new Scores(this);
 

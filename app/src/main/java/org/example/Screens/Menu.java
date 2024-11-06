@@ -138,9 +138,18 @@ public class Menu {
 
     public void keyReleasedHandler(int keyCode){
         if (keyCode == KeyEvent.VK_SPACE || keyCode == KeyEvent.VK_ENTER) {
-            if (buttonSelected == 1) {
-                gamePanel.screen = "game";
-                gamePanel.game = new Game(gamePanel);
+
+            switch (buttonSelected) {
+                case 1:
+                    gamePanel.screen = "game";
+                    gamePanel.game = new Game(gamePanel, "1 player");
+                    break;
+
+                case 2:
+                    gamePanel.screen = "game";
+                    gamePanel.game = new Game(gamePanel, "2 player");
+                default:
+                    break;
             }
         }
     }

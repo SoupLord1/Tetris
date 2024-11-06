@@ -11,53 +11,67 @@ import org.example.GamePanel;
 import org.example.Utils.*;;
 
 public class Game {
-    private int linesScore = 0;
-    private int pointsScore = 0;
-    private int level = 0;
-    private int linesPerLevel = 16;
-    private int levelSpeedUp = (16*level);
 
     private final int resolution = 64;
     private final Vector boardResolution = new Vector(10, 19);
+    public final int defaultUpdateSpeed = 128;
+    public final int defaultMovementTimeout = 32;
 
-    private int[][] gameBoard = new int[boardResolution.x][boardResolution.y];
-    private int[][] lineClearBuffer = new int[boardResolution.x][boardResolution.y];
-    private int[][] playerBoard = new int[boardResolution.x][boardResolution.y];
-    private int[][] playerBoardBuffer = new int[boardResolution.x][boardResolution.y];
-    private int[]  playerShiftBuffer = new int[boardResolution.x];
+    Player player1 = new Player();
+    Player player2 = new Player();
 
-    private int updateCooldown = 0;
-    private final int defaultUpdateSpeed = 128;
-    private int fastCooldownSpeed = (defaultUpdateSpeed - levelSpeedUp)/4;
-    private int currentUpdateCooldown = defaultUpdateSpeed - levelSpeedUp;
-
-    private int movementTimeout = 0;
-    private final int defaultMovementTimeout = 32;
-
-    private boolean readyToPlace = false;
-    private int placeHeight = 0;
-
-    private String moveDirection = "none"; // left/right
-    private String rotationDirection = "none"; // clockwise/counterclockwise
-
-    private boolean dropPiece = false;
-
-    private Piece playerPiece;
-
-    private boolean allowedToMoveRight;
-    private boolean allowedToMoveLeft;
-
-    private ArrayList<Line> allLines = new ArrayList<Line>();
-
-    private int lineClearAnimationCooldown = 0;
-    private int defaultLineClearAnimationCooldown = 8;
 
     private boolean gameOver = false;
     private GamePanel gamePanel;
+    private String mode;
     
-        public Game(GamePanel gamePanel){
+        public Game(GamePanel gamePanel, String mode){
             this.gamePanel = gamePanel;
-        playerPiece = new Piece();
+            this.mode = mode;
+    }
+
+    class Player {
+        public int linesScore = 0;
+        public int pointsScore = 0;
+        public int level = 0;
+        public int linesPerLevel = 16;
+        public int levelSpeedUp = (16*level);
+
+        public int updateCooldown = 0;
+
+        public int fastCooldownSpeed = (defaultUpdateSpeed - levelSpeedUp)/4;
+        public int currentUpdateCooldown = defaultUpdateSpeed - levelSpeedUp;
+
+        public int movementTimeout = 0;
+
+        public int[][] gameBoard = new int[boardResolution.x][boardResolution.y];
+        public int[][] lineClearBuffer = new int[boardResolution.x][boardResolution.y];
+        public int[][] playerBoard = new int[boardResolution.x][boardResolution.y];
+        public int[][] playerBoardBuffer = new int[boardResolution.x][boardResolution.y];
+        public int[]  playerShiftBuffer = new int[boardResolution.x];
+
+        public boolean readyToPlace = false;
+        public int placeHeight = 0;
+
+        public String moveDirection = "none"; // left/right
+        public String rotationDirection = "none"; // clockwise/counterclockwise
+
+        public boolean allowedToMoveRight;
+        public boolean allowedToMoveLeft;
+
+        public ArrayList<Line> allLines = new ArrayList<Line>();
+
+        public int lineClearAnimationCooldown = 0;
+        public int defaultLineClearAnimationCooldown = 8;
+
+        public Piece playerPiece = new Piece(this);
+
+        public boolean dropPiece = false;
+
+
+        public Player() {
+
+        }
     }
 
     class Piece {
@@ -67,6 +81,7 @@ public class Game {
         public int[] translations = {0,0};
         public String type;
         public int rotation = 0;
+        Player player;
 
 
         //base coords of all the blocks in each rotation phase
@@ -92,7 +107,10 @@ public class Game {
             {{4,1},{5,1},{6,1},{5,2}},{{4,1},{5,1},{5,0},{5,2}},{{4,1},{5,1},{5,0},{6,1}},{{6,1},{5,1},{5,0},{5,2}}
         };
 
-        public Piece() {
+        public Piece(Player player) {
+
+            this.player = player;
+
             type = RandomPiece();
 
             if (type == "squigly" || type == "reverse-squigly" || type == "t-block") {
@@ -140,13 +158,14 @@ public class Game {
             }
 
             //resets the playboard for the new piece rotation
-            playerBoard = new int[boardResolution.x][boardResolution.y];
+
+            player.playerBoard = new int[boardResolution.x][boardResolution.y];
 
             //adds the coordinate translations to the piece to put it in the correct spot
-            playerBoard[newRotation[0][0]+translations[0]][newRotation[0][1]+translations[1]] = color;
-            playerBoard[newRotation[1][0]+translations[0]][newRotation[1][1]+translations[1]] = color;
-            playerBoard[newRotation[2][0]+translations[0]][newRotation[2][1]+translations[1]] = color;
-            playerBoard[newRotation[3][0]+translations[0]][newRotation[3][1]+translations[1]] = color;
+            player.playerBoard[newRotation[0][0]+translations[0]][newRotation[0][1]+translations[1]] = color;
+            player.playerBoard[newRotation[1][0]+translations[0]][newRotation[1][1]+translations[1]] = color;
+            player.playerBoard[newRotation[2][0]+translations[0]][newRotation[2][1]+translations[1]] = color;
+            player.playerBoard[newRotation[3][0]+translations[0]][newRotation[3][1]+translations[1]] = color;
         }
 
         public String rotatePiece(String direction){
@@ -270,14 +289,15 @@ public class Game {
         int animationLoops = 5;
         int[] lineAnimationPosition = {4,5};
         int linePosition;
+        Player player;
 
-        public Line(int linePosition) {
+        public Line(int linePosition, Player player) {
             this.linePosition = linePosition;
         }
 
         public void animate() {
-            gameBoard[lineAnimationPosition[0]][linePosition] = 0;
-            gameBoard[lineAnimationPosition[1]][linePosition] = 0;
+            player.gameBoard[lineAnimationPosition[0]][linePosition] = 0;
+            player.gameBoard[lineAnimationPosition[1]][linePosition] = 0;
 
             if (lineAnimationPosition[0] > 0) {
                 lineAnimationPosition[0]--;
@@ -291,169 +311,170 @@ public class Game {
         }
     }
     
-    public void movePiece(String direction) {
-
-        if (direction == "none") {  
+    public void movePiece(Player player) {
+        
+        if (player.moveDirection == "none") {  
             return;
         }
 
-        if (movementTimeout != 0) {
-            movementTimeout--;
+
+
+        if (player.movementTimeout != 0) {
+            player.movementTimeout--;
             return;
         }
 
-        allowedToMoveRight = true;
-        allowedToMoveLeft = true;
+        player.allowedToMoveRight = true;
+        player.allowedToMoveLeft = true;
 
-        if(dropPiece) {
-            allowedToMoveRight = false;
-            allowedToMoveLeft = false;
+        if(player.dropPiece) {
+            player.allowedToMoveRight = false;
+            player.allowedToMoveLeft = false;
         }
 
         //checks for borders
-        for (int i = 0; i < playerBoard[0].length; i++) {
-            if (playerBoard[9][i] != 0) {
-                allowedToMoveRight = false;
+        for (int i = 0; i < player.playerBoard[0].length; i++) {
+            if (player.playerBoard[9][i] != 0) {
+                player.allowedToMoveRight = false;
             }
 
-            if (playerBoard[0][i] != 0) {
-                allowedToMoveLeft = false;
+            if (player.playerBoard[0][i] != 0) {
+                player.allowedToMoveLeft = false;
             }
         }  
 
         //checks for blocks
-        for (int i = 0; i < playerBoard.length; i++) {
-            for (int j = 0; j < playerBoard[0].length; j++) {
-                if (playerBoard[i][j] == 0) {
+        for (int i = 0; i < player.playerBoard.length; i++) {
+            for (int j = 0; j < player.playerBoard[0].length; j++) {
+                if (player.playerBoard[i][j] == 0) {
                     continue;
                 }
-                if (readyToPlace) {
+                if (player.readyToPlace) {
                     continue;
                 }
-                if (i > 0 && i < playerBoard.length) {
-                    if (gameBoard[i-1][j] != 0) {
-                        allowedToMoveLeft = false;
+                if (i > 0 && i < player.playerBoard.length) {
+                    if (player.gameBoard[i-1][j] != 0) {
+                        player.allowedToMoveLeft = false;
                     }
                 }
-                if (i > 0 && i < playerBoard.length-1) {
-                    if (gameBoard[i+1][j] != 0) {
-                        allowedToMoveRight = false;
+                if (i > 0 && i < player.playerBoard.length-1) {
+                    if (player.gameBoard[i+1][j] != 0) {
+                        player.allowedToMoveRight = false;
                     }
                 }
             }
             
         }
         
-        if (direction == "right" && allowedToMoveRight == true) {
+        if (player1.moveDirection == "right" && player.allowedToMoveRight == true) {
 
-            playerShiftBuffer = playerBoard[9].clone();
-            System.arraycopy(playerBoard, 0, playerBoardBuffer, 1, playerBoard.length-1);
+            player.playerShiftBuffer = player.playerBoard[9].clone();
+            System.arraycopy(player.playerBoard, 0, player.playerBoardBuffer, 1, player.playerBoard.length-1);
 
-            playerBoard[0] = playerShiftBuffer.clone();
+            player.playerBoard[0] = player.playerShiftBuffer.clone();
 
-            playerBoard = new int[boardResolution.x][boardResolution.y];
-            playerBoard = playerBoardBuffer.clone();
-            playerBoardBuffer = new int[boardResolution.x][boardResolution.y];
+            player.playerBoard = new int[boardResolution.x][boardResolution.y];
+            player.playerBoard = player.playerBoardBuffer.clone();
+            player.playerBoardBuffer = new int[boardResolution.x][boardResolution.y];
 
-            playerPiece.translations[0]++;
+            player.playerPiece.translations[0]++;
             
         }   
 
     
-        if (direction == "left" && allowedToMoveLeft) {
+        if (player.moveDirection == "left" && player.allowedToMoveLeft) {
 
-            playerShiftBuffer = playerBoard[0].clone();
-            System.arraycopy(playerBoard, 1, playerBoardBuffer, 0, playerBoard.length-1);
-            playerBoard[9] = playerShiftBuffer.clone();
+            player.playerShiftBuffer = player.playerBoard[0].clone();
+            System.arraycopy(player.playerBoard, 1, player.playerBoardBuffer, 0, player.playerBoard.length-1);
+            player.playerBoard[9] = player.playerShiftBuffer.clone();
 
-            playerBoard = new int[boardResolution.x][boardResolution.y];
-            playerBoard = playerBoardBuffer.clone();
-            playerBoardBuffer = new int[boardResolution.x][boardResolution.y];
+            player.playerBoard = new int[boardResolution.x][boardResolution.y];
+            player.playerBoard = player.playerBoardBuffer.clone();
+            player.playerBoardBuffer = new int[boardResolution.x][boardResolution.y];
 
-            playerPiece.translations[0]--;
+            player.playerPiece.translations[0]--;
             
-        }
-           
-        moveDirection = "none";   
-        
+        }   
     }
 
-    public void placePiece() {
+    public void placePiece(Player player) {
         
         //checks if the piece should be placed
-        for (int i = 0; i < playerBoard.length; i++) {
-            if (readyToPlace) {
+
+
+        for (int i = 0; i < player.playerBoard.length; i++) {
+            if (player.readyToPlace) {
                 break;
             }
             
-            for (int j = 0; j < playerBoard[0].length; j++) {
-                if (playerBoard[i][j] == 0) {
+            for (int j = 0; j < player.playerBoard[0].length; j++) {
+                if (player.playerBoard[i][j] == 0) {
                     continue;
                 }
-                if (readyToPlace) {
+                if (player.readyToPlace) {
                     continue;
                 }
-                if (j < playerBoard[0].length - 1) {
-                    if (gameBoard[i][j+1] != 0) {
-                        placeHeight = j;
-                        readyToPlace = true;
+                if (j < player.playerBoard[0].length - 1) {
+                    if (player.gameBoard[i][j+1] != 0) {
+                        player.placeHeight = j;
+                        player.readyToPlace = true;
                     }
                 } else {
-                    placeHeight = j;
-                    readyToPlace = true;               
+                    player.placeHeight = j;
+                    player.readyToPlace = true;               
                 }
             }
 
         }
 
         //moves the piece down or places it
-        if (placeHeight != playerBoard[0].length && !readyToPlace) {
-            for (int i = 0; i < playerBoard.length; i++) {
-                    System.arraycopy(playerBoard[i], 0, playerBoardBuffer[i], 1, playerBoard[i].length-1);      
+        if (player.placeHeight != player.playerBoard[0].length && !player.readyToPlace) {
+            for (int i = 0; i < player.playerBoard.length; i++) {
+                    System.arraycopy(player.playerBoard[i], 0, player.playerBoardBuffer[i], 1, player.playerBoard[i].length-1);      
             }
         
-            playerBoard = playerBoardBuffer.clone();
-            playerBoardBuffer = new int[boardResolution.x][boardResolution.y];
+            player.playerBoard = player.playerBoardBuffer.clone();
+            player.playerBoardBuffer = new int[boardResolution.x][boardResolution.y];
 
-            playerPiece.translations[1]++;
+            player.playerPiece.translations[1]++;
 
         } else {
-            movementTimeout = defaultMovementTimeout;
-            for(int i = 0; i < playerBoard.length;i++) {
-                for (int j = 0; j < playerBoard[0].length; j++) {
-                    if (gameBoard[i][j] == 0) {
-                        gameBoard[i][j] = playerBoard[i][j];
+            player.movementTimeout = defaultMovementTimeout;
+            for(int i = 0; i < player.playerBoard.length;i++) {
+                for (int j = 0; j < player.playerBoard[0].length; j++) {
+                    if (player.gameBoard[i][j] == 0) {
+                        player.gameBoard[i][j] = player.playerBoard[i][j];
                     }
                 }
             }
 
-            dropPiece = false;
+            player.dropPiece = false;
 
-            currentUpdateCooldown = defaultUpdateSpeed - levelSpeedUp;
+            player.currentUpdateCooldown = defaultUpdateSpeed - player.levelSpeedUp;
 
 
-            playerBoard = new int[boardResolution.x][boardResolution.y];
+            player.playerBoard = new int[boardResolution.x][boardResolution.y];
 
-            playerPiece = new Piece();
-            scanForLines();
+            player.playerPiece = new Piece(player);
+            scanForLines(player);
         }
 
 
-        readyToPlace = false;
+        player.readyToPlace = false;
 
     }
 
-    public void scanForLines() {
+    public void scanForLines(Player player) {
 
         boolean lineDetected = false;
         int linePosition = 0;
 
         //checks if there is a line to clear
-        for (int i = 0; i < gameBoard[0].length; i++) {
+        for (int i = 0; i < player.gameBoard[0].length; i++) {
             lineDetected = true;
 
-            for (int j = 0; j < gameBoard.length; j++) {
-                if (gameBoard[j][i] == 0) {
+            for (int j = 0; j < player.gameBoard.length; j++) {
+                if (player.gameBoard[j][i] == 0) {
                     lineDetected = false;
 
                 } else {
@@ -462,63 +483,63 @@ public class Game {
             }
             
             if (lineDetected) {
-                allLines.add(new Line(linePosition));
+                player.allLines.add(new Line(linePosition, player));
                 
                 lineDetected = false;
             }
             
         }
 
-        if (allLines.size() == 1) {
-            pointsScore += 40 * (level + 1);
+        if (player.allLines.size() == 1) {
+            player.pointsScore += 40 * (player.level + 1);
 
-        } else if (allLines.size() == 2) {
-            pointsScore += 100 * (level + 1);
+        } else if (player.allLines.size() == 2) {
+            player.pointsScore += 100 * (player.level + 1);
 
-        } else if (allLines.size() == 3) {
-            pointsScore += 300 * (level + 1);
+        } else if (player.allLines.size() == 3) {
+            player.pointsScore += 300 * (player.level + 1);
 
-        } else if (allLines.size() == 4) {
-            pointsScore += 1200 * (level + 1);
+        } else if (player.allLines.size() == 4) {
+            player.pointsScore += 1200 * (player.level + 1);
 
         }
 
     }
 
-    public void clearLine(int linePosition) {
-        lineClearBuffer = new int[boardResolution.x][boardResolution.y];
+    public void clearLine(int linePosition, Player player) {
+        player.lineClearBuffer = new int[boardResolution.x][boardResolution.y];
 
-            for (int j = 0; j < playerBoard.length; j++) {
-                System.arraycopy(gameBoard[j], 0, lineClearBuffer[j], 1, linePosition); 
+            for (int j = 0; j < player.playerBoard.length; j++) {
+                System.arraycopy(player.gameBoard[j], 0, player.lineClearBuffer[j], 1, linePosition); 
             }
 
             
-            for (int k = 0; k < lineClearBuffer[0].length; k++) {
+            for (int k = 0; k < player.lineClearBuffer[0].length; k++) {
                 // System.out.print("[");
-                for (int l = 0; l < lineClearBuffer.length; l++) {
+                for (int l = 0; l < player.lineClearBuffer.length; l++) {
                     // System.out.print(lineClearBuffer[l][k]+",");
                     if (k < linePosition) {
-                        gameBoard[l][k] = 0;
+                        player.gameBoard[l][k] = 0;
                     }
                 }
                 // System.out.println("]");
             }
             
-            for (int k = 0; k < lineClearBuffer.length; k++) {
-                for (int l = 0; l < lineClearBuffer[0].length; l++) {
-                    if (lineClearBuffer[k][l] != 0) {
-                        gameBoard[k][l] = lineClearBuffer[k][l];
+            for (int k = 0; k < player.lineClearBuffer.length; k++) {
+                for (int l = 0; l < player.lineClearBuffer[0].length; l++) {
+                    if (player.lineClearBuffer[k][l] != 0) {
+                        player.gameBoard[k][l] = player.lineClearBuffer[k][l];
                     }
                 }
             }
     }
 
-    public void lineAnimation() {
-        if (lineClearAnimationCooldown == 0) {
+    public void lineAnimation(Player player) {
+        if (player.lineClearAnimationCooldown == 0) {
 
             ArrayList<Line> linesToRemove = new ArrayList<Line>();
 
-            for (Line line : allLines) {
+            for (Line line : player.allLines) {
                 if (line.animationLoops == 0) {
                     linesToRemove.add(line);
                 }
@@ -526,29 +547,29 @@ public class Game {
             }
             
             for (Line line : linesToRemove) {
-                allLines.remove(line);
-                clearLine(line.linePosition);
+                player.allLines.remove(line);
+                clearLine(line.linePosition, player);
 
-                linesScore++;
+                player.linesScore++;
 
-                if (linesScore % linesPerLevel == 0 && linesScore !=0) {
-                    level++;
+                if (player.linesScore % player.linesPerLevel == 0 && player.linesScore !=0) {
+                    player.level++;
                 }
             }
 
             
 
-            lineClearAnimationCooldown = defaultLineClearAnimationCooldown;
+            player.lineClearAnimationCooldown = player.defaultLineClearAnimationCooldown;
 
         } else {
-            lineClearAnimationCooldown--;
+            player.lineClearAnimationCooldown--;
         }
     }
     
-    public void renderBoard(Graphics g, int[][] board) {
+    public void renderBoard(Graphics g, int[][] board, int location) {
 
         for(int i = 0; i < board.length;i++) {
-            for (int j = 2; j < playerBoard[0].length; j++) {
+            for (int j = 2; j < board[0].length; j++) {
                 if (board[i][j] != 0) {
 
                     BufferedImage block;
@@ -581,7 +602,18 @@ public class Game {
                             break;
                     }
 
-                    g.drawImage(block, (i+11)*resolution, ((j)-1)*resolution, null);
+                    switch (mode) {
+                        case "1 player":
+                            g.drawImage(block, (i+location)*resolution, ((j)-1)*resolution, null);
+                            break;
+
+                        case "2 player":
+                            g.drawImage(block, (i+location)*resolution, ((j)-1)*resolution, null);
+                            g.drawImage(block, (i+location)*resolution, ((j)-1)*resolution, null);
+                        default:
+                            break;
+                    }
+                    
 
                 }
             }
@@ -590,92 +622,166 @@ public class Game {
 
     public void draw(Graphics g) {
         g.setColor(Color.BLACK);
-        //left and right border
-        g.fillRect(0, 0, resolution*11, gamePanel.getHeight());
-        g.fillRect(gamePanel.getWidth()-resolution*11, 0, resolution*11, gamePanel.getHeight());
-        //top and bottom border
-        g.fillRect(resolution*11, gamePanel.getHeight()-resolution, resolution*10, resolution*1);
-        g.fillRect(resolution*11, 0, resolution*10, resolution*1);
 
-        renderBoard(g, playerBoard);
-        renderBoard(g, gameBoard);
+        switch (mode) {
+            case "1 player":
+                //left and right border
+                g.fillRect(0, 0, resolution*11, gamePanel.getHeight());
+                g.fillRect(gamePanel.getWidth()-resolution*11, 0, resolution*11, gamePanel.getHeight());
+                //top and bottom border
+                g.fillRect(resolution*11, gamePanel.getHeight()-resolution, resolution*10, resolution*1);
+                g.fillRect(resolution*11, 0, resolution*10, resolution*1);
+        
+                renderBoard(g, player1.playerBoard,11);
+                renderBoard(g, player1.gameBoard, 11);
+        
+                g.setFont(gamePanel.gameFont.deriveFont(55f));
+                g.setColor(Color.WHITE);
+                g.drawString("Lines Cleared: "+player1.linesScore, resolution*1, resolution*17);
+                g.drawString("Score: "+player1.pointsScore, resolution*22, resolution*17);
+                g.drawString("Level: "+player1.level, 30, 60);  
+                break;
 
-        g.setFont(gamePanel.gameFont.deriveFont(55f));
-        g.setColor(Color.WHITE);
-        g.drawString("Lines Cleared: "+linesScore, resolution*1, resolution*17);
-        g.drawString("Score: "+pointsScore, resolution*22, resolution*17);
-        g.drawString("Level: "+level, 30, 60);       
+            case "2 player":
+                //left and right border
+                g.fillRect(0, 0, resolution*4, gamePanel.getHeight());
+                g.fillRect(gamePanel.getWidth()-resolution*4, 0, resolution*4, gamePanel.getHeight());
+                //top and bottom border
+                g.fillRect(resolution*0, gamePanel.getHeight()-resolution, resolution*32, resolution*1);
+                g.fillRect(resolution*0, 0, resolution*32, resolution*1);
+
+                //middle
+                g.fillRect(resolution*14, 0, resolution*4, gamePanel.getHeight());
+        
+                renderBoard(g, player1.playerBoard, 4);
+                renderBoard(g, player1.gameBoard, 4);
+
+                renderBoard(g, player2.playerBoard, 18);
+                renderBoard(g, player2.gameBoard, 18);
+        
+                // g.setFont(gamePanel.gameFont.deriveFont(55f));
+                // g.setColor(Color.WHITE);
+                // g.drawString("Lines Cleared: "+linesScore, resolution*1, resolution*17);
+                // g.drawString("Score: "+pointsScore, resolution*22, resolution*17);
+                // g.drawString("Level: "+level, 30, 60);  
+                break;
+            default:
+                break;
+        }
+     
     }
     
     public void update() {
 
+
         if (!gameOver) {
             
-            levelSpeedUp = (8*level);
-            fastCooldownSpeed = (defaultUpdateSpeed - levelSpeedUp)/4;
+            player1.levelSpeedUp = (8*player1.level);
+            player1.fastCooldownSpeed = (defaultUpdateSpeed - player1.levelSpeedUp)/4;
 
-            lineAnimation();
+            lineAnimation(player1);
 
-            for(int i = 0; i < gameBoard.length - 1; i++) {
-                if (gameBoard[i][1] != 0) {
+            for(int i = 0; i < player1.gameBoard.length - 1; i++) {
+                if (player1.gameBoard[i][1] != 0 || player1.gameBoard[i][1] != 0) {
                     gameOver = true;
                     gamePanel.screen = "menu";
                 }
             }
 
-            if (updateCooldown == 0) {
-                placePiece();
+            if (player1.updateCooldown == 0) {
+                placePiece(player1);
                 
-                if (currentUpdateCooldown > 0) {
-                    updateCooldown = currentUpdateCooldown;
+                if (player1.currentUpdateCooldown > 0) {
+                    player1.updateCooldown = player1.currentUpdateCooldown;
                 } else {
-                    updateCooldown = 0;
+                    player1.updateCooldown = 0;
                 }
                 
             } else {
-                updateCooldown--;
+                player1.updateCooldown--;
             }
 
-            movePiece(moveDirection);
-            rotationDirection = playerPiece.rotatePiece(rotationDirection);
+            movePiece(player1);
+            player1.rotationDirection = player1.playerPiece.rotatePiece(player1.rotationDirection);
+
+
             
-            if (dropPiece) {
-                currentUpdateCooldown = 0;
-                updateCooldown = 0;
+            if (player1.dropPiece) {
+                player1.currentUpdateCooldown = 0;
+                player1.updateCooldown = 0;
             }
+
+            if (mode.equals("2 player")) {
+                player2.levelSpeedUp = (8*player2.level);
+                player2.fastCooldownSpeed = (defaultUpdateSpeed - player2.levelSpeedUp)/4;
+    
+                lineAnimation(player2);
+    
+                for(int i = 0; i < player2.gameBoard.length - 1; i++) {
+                    if (player2.gameBoard[i][1] != 0 || player2.gameBoard[i][1] != 0) {
+                        gameOver = true;
+                        gamePanel.screen = "menu";
+                    }
+                }
+    
+                if (player2.updateCooldown == 0) {
+                    placePiece(player1);
+                    
+                    if (player2.currentUpdateCooldown > 0) {
+                        player2.updateCooldown = player2.currentUpdateCooldown;
+                    } else {
+                        player2.updateCooldown = 0;
+                    }
+                    
+                } else {
+                    player2.updateCooldown--;
+                }
+    
+                movePiece(player2);
+                player2.rotationDirection = player2.playerPiece.rotatePiece(player2.rotationDirection);
+    
+    
+                
+                if (player2.dropPiece) {
+                    player2.currentUpdateCooldown = 0;
+                    player2.updateCooldown = 0;
+                }
+            }
+
+
         }
     }
 
     public void keyPressHandler(int keyCode) {
         if (keyCode == KeyEvent.VK_A) {
-            moveDirection = "left";
+            player1.moveDirection = "left";
         }
         if (keyCode == KeyEvent.VK_D) {
-            moveDirection = "right";
+            player1.moveDirection = "right";
         }
         if (keyCode == KeyEvent.VK_S) {
-            if (currentUpdateCooldown != fastCooldownSpeed) {
-                currentUpdateCooldown = fastCooldownSpeed;
-                updateCooldown = 0;
+            if (player1.currentUpdateCooldown != player1.fastCooldownSpeed) {
+                player1.currentUpdateCooldown = player1.fastCooldownSpeed;
+                player1.updateCooldown = 0;
             }
         }
         if (keyCode == KeyEvent.VK_W) {
-            dropPiece = true;
+            player1.dropPiece = true;
         }
 
         if (keyCode == KeyEvent.VK_Q) {
-            rotationDirection = "counterClockwise";
+            player1.rotationDirection = "counterClockwise";
         }
 
         if (keyCode == KeyEvent.VK_E) {
-            rotationDirection = "clockwise";
+            player1.rotationDirection = "clockwise";
         }
     }
     
     public void keyReleasedHandler(char key) {
         if (key == 's') {
-            currentUpdateCooldown = defaultUpdateSpeed - levelSpeedUp;
-            updateCooldown = 0;
+            player1.currentUpdateCooldown = defaultUpdateSpeed - player1.levelSpeedUp;
+            player1.updateCooldown = 0;
         }
     }
 }
