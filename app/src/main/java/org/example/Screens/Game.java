@@ -296,10 +296,10 @@ public class Game {
         }
     }
     
-    public void renderBoard(Graphics g, int[][] board, int location) {
+    public void renderBoard(Graphics g, int[][] board, Vector location) {
 
         for(int i = 0; i < board.length;i++) {
-            for (int j = 2; j < board[0].length; j++) {
+            for (int j = 0; j < board[0].length; j++) {
                 if (board[i][j] != 0) {
 
                     BufferedImage block;
@@ -332,22 +332,22 @@ public class Game {
                             break;
                     }
 
-                    switch (mode) {
-                        case "1 player":
-                            g.drawImage(block, (i+location)*resolution, ((j)-1)*resolution, null);
-                            break;
-
-                        case "2 player":
-                            g.drawImage(block, (i+location)*resolution, ((j)-1)*resolution, null);
-                            g.drawImage(block, (i+location)*resolution, ((j)-1)*resolution, null);
-                        default:
-                            break;
-                    }
-                    
+                    g.drawImage(block, (i+location.x)*resolution, ((j+location.y)-1)*resolution, null);
 
                 }
             }
         }
+    }
+
+    public void renderNextPiece(Graphics g, Player player) {
+        int[][] nextPieceBoard = new int[4][4];  
+        nextPieceBoard[0][0] = 2;
+        nextPieceBoard[3][3] = 2;
+
+        g.setColor(Color.WHITE);
+        g.fillRect(gamePanel.getWidth() - 7*resolution, resolution, resolution*4, resolution*4);
+
+        renderBoard(g, nextPieceBoard, new Vector(gamePanel.getWidth()/resolution - 7, 2));
     }
 
     public void draw(Graphics g) {
@@ -355,6 +355,9 @@ public class Game {
 
         switch (mode) {
             case "1 player":
+
+                renderBoard(g, player1.playerBoard,new Vector(11, 0));
+                renderBoard(g, player1.gameBoard, new Vector(11, 0));
                 //left and right border
                 g.fillRect(0, 0, resolution*11, gamePanel.getHeight());
                 g.fillRect(gamePanel.getWidth()-resolution*11, 0, resolution*11, gamePanel.getHeight());
@@ -362,17 +365,26 @@ public class Game {
                 g.fillRect(resolution*11, gamePanel.getHeight()-resolution, resolution*10, resolution*1);
                 g.fillRect(resolution*11, 0, resolution*10, resolution*1);
         
-                renderBoard(g, player1.playerBoard,11);
-                renderBoard(g, player1.gameBoard, 11);
+                
         
                 g.setFont(gamePanel.gameFont.deriveFont(55f));
                 g.setColor(Color.WHITE);
                 g.drawString("Lines Cleared: "+player1.linesScore, resolution*1, resolution*17);
                 g.drawString("Score: "+player1.pointsScore, resolution*22, resolution*17);
                 g.drawString("Level: "+player1.level, 30, 60);  
+
+                renderNextPiece(g, player1);
+
                 break;
 
             case "2 player":
+
+                renderBoard(g, player1.playerBoard, new Vector(4, 0));
+                renderBoard(g, player1.gameBoard, new Vector(4, 0));
+
+                renderBoard(g, player2.playerBoard, new Vector(18, 0));
+                renderBoard(g, player2.gameBoard, new Vector(18, 0));
+
                 //left and right border
                 g.fillRect(0, 0, resolution*4, gamePanel.getHeight());
                 g.fillRect(gamePanel.getWidth()-resolution*4, 0, resolution*4, gamePanel.getHeight());
@@ -383,13 +395,32 @@ public class Game {
                 //middle
                 g.fillRect(resolution*14, 0, resolution*4, gamePanel.getHeight());
         
-                renderBoard(g, player1.playerBoard, 4);
-                renderBoard(g, player1.gameBoard, 4);
+                g.setFont(gamePanel.gameFont.deriveFont(45f));
+                g.setColor(Color.WHITE);
+                g.drawString("Player 1", resolution*7, 50);
+                g.setFont(gamePanel.gameFont.deriveFont(45f));
+                g.setColor(Color.WHITE);
+                g.drawString("Player 2", resolution*21, 50);
 
-                renderBoard(g, player2.playerBoard, 18);
-                renderBoard(g, player2.gameBoard, 18);
-                    
+                g.drawString("Lines ", resolution/2, gamePanel.getHeight()-resolution*2);
+                g.drawString(""+player1.linesScore, resolution/2, gamePanel.getHeight()-resolution);
+
+                g.drawString("Lines ", gamePanel.getWidth()-resolution*3 - resolution/2, gamePanel.getHeight()-resolution*2);
+                g.drawString(""+player2.linesScore, gamePanel.getWidth()-resolution*3 - resolution/2, gamePanel.getHeight()-resolution);
                 
+                g.drawString("Score", resolution/2, gamePanel.getHeight()-resolution*4);
+                g.drawString(""+player1.pointsScore, resolution/2, gamePanel.getHeight()-resolution*3);
+
+                g.drawString("Score", gamePanel.getWidth()-resolution*3 - resolution/2, gamePanel.getHeight()-resolution*4);
+                g.drawString(""+player2.pointsScore, gamePanel.getWidth()-resolution*3 - resolution/2, gamePanel.getHeight()-resolution*3);
+
+                g.drawString("Level", resolution/2, gamePanel.getHeight()-resolution*6);
+                g.drawString(""+player1.level, resolution/2, gamePanel.getHeight()-resolution*5);
+
+                g.drawString("Level", gamePanel.getWidth()-resolution*3 - resolution/2, gamePanel.getHeight()-resolution*6);
+                g.drawString(""+player2.level, gamePanel.getWidth()-resolution*3 - resolution/2, gamePanel.getHeight()-resolution*5);
+
+
                 break;
             default:
                 break;
@@ -506,28 +537,28 @@ public class Game {
         }
 
         //player 2
-        if (keyCode == KeyEvent.VK_J) {
+        if (keyCode == KeyEvent.VK_L) {
             player2.moveDirection = "left";
         }
-        if (keyCode == KeyEvent.VK_L) {
+        if (keyCode == KeyEvent.VK_QUOTE) {
             player2.moveDirection = "right";
         }
 
-        if (keyCode == KeyEvent.VK_K) {
+        if (keyCode == KeyEvent.VK_SEMICOLON) {
             if (player2.currentUpdateCooldown != player2.fastCooldownSpeed) {
                 player2.currentUpdateCooldown = player2.fastCooldownSpeed;
                 player2.updateCooldown = 0;
             }
         }
-        if (keyCode == KeyEvent.VK_I) {
+        if (keyCode == KeyEvent.VK_P) {
             player2.dropPiece = true;
         }
 
-        if (keyCode == KeyEvent.VK_U) {
+        if (keyCode == KeyEvent.VK_O) {
             player2.rotationDirection = "counterClockwise";
         }
 
-        if (keyCode == KeyEvent.VK_O) {
+        if (keyCode == KeyEvent.VK_OPEN_BRACKET) {
             player2.rotationDirection = "clockwise";
         }
     }
@@ -537,7 +568,7 @@ public class Game {
             player1.currentUpdateCooldown = Player.defaultUpdateSpeed - player1.levelSpeedUp;
             player1.updateCooldown = 0;
         }
-        if (keyCode == KeyEvent.VK_K) {
+        if (keyCode == KeyEvent.VK_SEMICOLON) {
             player2.currentUpdateCooldown = Player.defaultUpdateSpeed - player1.levelSpeedUp;
             player2.updateCooldown = 0;
         }
