@@ -177,7 +177,7 @@ public class GamePanel extends JPanel implements KeyListener{
 
         switch (screen) {
             case "game":
-                game.keyReleasedHandler(key);
+                game.keyReleasedHandler(keyCode);
                 break;
             
             case "menu": 

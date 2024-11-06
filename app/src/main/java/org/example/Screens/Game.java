@@ -15,7 +15,9 @@ public class Game {
     private final int resolution = 64;
     private final Vector boardResolution = new Vector(10, 19);
     public final int defaultUpdateSpeed = 128;
-    public final int defaultMovementTimeout = 32;
+    public final int defaultMovementTimeout = 16;
+
+    public String[] pieceList = new String[5_000]; 
 
     Player player1 = new Player();
     Player player2 = new Player();
@@ -25,9 +27,13 @@ public class Game {
     private GamePanel gamePanel;
     private String mode;
     
-        public Game(GamePanel gamePanel, String mode){
+    public Game(GamePanel gamePanel, String mode){
             this.gamePanel = gamePanel;
             this.mode = mode;
+            Piece.GeneratePieceList(pieceList);
+            player1.start();
+            player2.start();
+            
     }
 
     class Player {
@@ -63,8 +69,9 @@ public class Game {
 
         public int lineClearAnimationCooldown = 0;
         public int defaultLineClearAnimationCooldown = 8;
+        public Piece playerPiece;
+        public int piecePointer = 0;
 
-        public Piece playerPiece = new Piece(this);
 
         public boolean dropPiece = false;
 
@@ -72,12 +79,16 @@ public class Game {
         public Player() {
 
         }
+
+        public void start() {
+            playerPiece = new Piece(this);
+        }
     }
 
     class Piece {
-
-        private Random randomizer = new Random();
-        private String[] pieceTypes = {"l-block", "reverse-l-block", "squigly", "reverse-squigly", "cube", "line","t-block"};
+        
+        
+        public static final String[] pieceTypes = {"l-block", "reverse-l-block", "squigly", "reverse-squigly", "cube", "line","t-block"};
         public int[] translations = {0,0};
         public String type;
         public int rotation = 0;
@@ -111,7 +122,7 @@ public class Game {
 
             this.player = player;
 
-            type = RandomPiece();
+            type = nextPiece();
 
             if (type == "squigly" || type == "reverse-squigly" || type == "t-block") {
                 translations[1]=-1;
@@ -278,8 +289,19 @@ public class Game {
             renderPiece();
         }
         
-        public String RandomPiece() {
+        public static String RandomPiece() {
+            Random randomizer = new Random();
             return pieceTypes[randomizer.nextInt(pieceTypes.length)];
+        }
+        public String nextPiece() {
+            String piece = pieceList[player.piecePointer];
+            player.piecePointer++;
+            return piece;
+        }
+        public static void GeneratePieceList(String[] list){
+            for (int i = 0; i < list.length; i++) {
+                list[i] = RandomPiece();
+            }
         }
     }
 
@@ -292,6 +314,7 @@ public class Game {
         Player player;
 
         public Line(int linePosition, Player player) {
+            this.player = player;
             this.linePosition = linePosition;
         }
 
@@ -366,7 +389,7 @@ public class Game {
             
         }
         
-        if (player1.moveDirection == "right" && player.allowedToMoveRight == true) {
+        if (player.moveDirection == "right" && player.allowedToMoveRight == true) {
 
             player.playerShiftBuffer = player.playerBoard[9].clone();
             System.arraycopy(player.playerBoard, 0, player.playerBoardBuffer, 1, player.playerBoard.length-1);
@@ -378,7 +401,8 @@ public class Game {
             player.playerBoardBuffer = new int[boardResolution.x][boardResolution.y];
 
             player.playerPiece.translations[0]++;
-            
+            player.movementTimeout = defaultMovementTimeout;
+            player.moveDirection = "none";
         }   
 
     
@@ -393,8 +417,11 @@ public class Game {
             player.playerBoardBuffer = new int[boardResolution.x][boardResolution.y];
 
             player.playerPiece.translations[0]--;
+            player.movementTimeout = defaultMovementTimeout;
+            player.moveDirection = "none";
             
         }   
+
     }
 
     public void placePiece(Player player) {
@@ -711,7 +738,7 @@ public class Game {
                 player1.updateCooldown = 0;
             }
 
-            if (mode.equals("2 player")) {
+            if (mode == "2 player") {
                 player2.levelSpeedUp = (8*player2.level);
                 player2.fastCooldownSpeed = (defaultUpdateSpeed - player2.levelSpeedUp)/4;
     
@@ -725,7 +752,7 @@ public class Game {
                 }
     
                 if (player2.updateCooldown == 0) {
-                    placePiece(player1);
+                    placePiece(player2);
                     
                     if (player2.currentUpdateCooldown > 0) {
                         player2.updateCooldown = player2.currentUpdateCooldown;
@@ -753,6 +780,8 @@ public class Game {
     }
 
     public void keyPressHandler(int keyCode) {
+
+        //player 1
         if (keyCode == KeyEvent.VK_A) {
             player1.moveDirection = "left";
         }
@@ -776,12 +805,42 @@ public class Game {
         if (keyCode == KeyEvent.VK_E) {
             player1.rotationDirection = "clockwise";
         }
+
+        //player 2
+        if (keyCode == KeyEvent.VK_J) {
+            player2.moveDirection = "left";
+        }
+        if (keyCode == KeyEvent.VK_L) {
+            player2.moveDirection = "right";
+        }
+
+        if (keyCode == KeyEvent.VK_K) {
+            if (player2.currentUpdateCooldown != player2.fastCooldownSpeed) {
+                player2.currentUpdateCooldown = player2.fastCooldownSpeed;
+                player2.updateCooldown = 0;
+            }
+        }
+        if (keyCode == KeyEvent.VK_I) {
+            player2.dropPiece = true;
+        }
+
+        if (keyCode == KeyEvent.VK_U) {
+            player2.rotationDirection = "counterClockwise";
+        }
+
+        if (keyCode == KeyEvent.VK_O) {
+            player2.rotationDirection = "clockwise";
+        }
     }
     
-    public void keyReleasedHandler(char key) {
-        if (key == 's') {
+    public void keyReleasedHandler(int keyCode) {
+        if (keyCode == KeyEvent.VK_S) {
             player1.currentUpdateCooldown = defaultUpdateSpeed - player1.levelSpeedUp;
             player1.updateCooldown = 0;
+        }
+        if (keyCode == KeyEvent.VK_K) {
+            player2.currentUpdateCooldown = defaultUpdateSpeed - player1.levelSpeedUp;
+            player2.updateCooldown = 0;
         }
     }
 }
