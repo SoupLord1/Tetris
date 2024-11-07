@@ -281,4 +281,60 @@ public class Piece {
         
         return offset;
     }
+
+    public static Vector getPiece(int[][] pieceBoard, String[] pieceList, String type) {
+        Vector offset = new Vector(0, 0);
+        int color = 0;
+        int rotation = 0;
+        int[][] selectedPiece = new int[pieceBoard.length][pieceBoard[0].length];
+
+        //changes the rotation of a piece
+        if (type == "l-block") {
+            color = 5;
+            selectedPiece = lBlockRotations[rotation];
+            offset.y = 32;
+            offset.x = -64;
+
+        }
+        if (type == "reverse-l-block") {
+            color = 4;
+            selectedPiece = rlBlockRotations[rotation];
+            offset.y = 32;
+
+        }
+        if (type == "squigly") {
+            color = 4;
+            selectedPiece = squiglyRotations[rotation];
+            offset.x = -32;
+
+        }
+        if (type == "reverse-squigly") {
+            color = 5;
+            selectedPiece = rsquiglyRotations[rotation];
+            offset.x = -32;
+
+        }
+        if (type == "cube") {
+            color = 3;
+            selectedPiece = cubeRotations[rotation];
+            offset.y = 64;
+        }
+        if (type == "line") {
+            color = 1;
+            selectedPiece = lineRotations[rotation];
+            offset.y = -32;
+        }
+        if (type == "t-block") {
+            color = 3;
+            selectedPiece = tBlockRotations[rotation];
+            offset.x = -32;
+        }
+
+        pieceBoard[selectedPiece[0][0]-3][selectedPiece[0][1]] = color;
+        pieceBoard[selectedPiece[1][0]-3][selectedPiece[1][1]] = color;
+        pieceBoard[selectedPiece[2][0]-3][selectedPiece[2][1]] = color;
+        pieceBoard[selectedPiece[3][0]-3][selectedPiece[3][1]] = color;
+        
+        return offset;
+    }
 }

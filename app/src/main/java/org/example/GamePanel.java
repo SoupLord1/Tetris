@@ -23,15 +23,15 @@ public class GamePanel extends JPanel implements KeyListener{
     class ScoreMap extends HashMap<Integer, HashMap<String, Integer>> {}
     // #paths
 
-    String resourcePath = "src/main/resources/";
+    public static String resourcePath = "src/main/resources/";
 
-    String imagePath = resourcePath+"images/";
-    String fontPath = resourcePath+"fonts/";
-    String dataPath = resourcePath+"data/";
+    public static String imagePath = resourcePath+"images/";
+    public static String fontPath = resourcePath+"fonts/";
+    public static String dataPath = resourcePath+"data/";
 
-    String blockImagePath = imagePath+"block.png";
-    String pixelmixFontPath = fontPath+"pixelmix.ttf";
-    String pixelmixBoldFontPath = fontPath+"pixelmix_bold.ttf";
+    public static String blockImagePath = imagePath+"block.png";
+    public static String pixelmixFontPath = fontPath+"pixelmix.ttf";
+    public static String pixelmixBoldFontPath = fontPath+"pixelmix_bold.ttf";
 
     public String screen = "menu"; // menu/game/scores
 
@@ -51,22 +51,21 @@ public class GamePanel extends JPanel implements KeyListener{
 
     public Tetris tetris;
 
-    Menu menu = new Menu(this);
+    public Menu menu = new Menu(this);
 
     public Game game = new Game(this, "1 player");
 
-    Scores scores =  new Scores(this);
+    public Scores scores =  new Scores(this);
 
     /*  BUG
-        *  
+        *  When rotation next to another piece it will phase into the neighbor pieces.
         */
 
     /* TODO
-        * Implement score
+        * Implement score screen
+        * # Display scores on screen
+        * Implement score update on game over
         * Implement game over and reset
-        * Implement next piece view
-        * Implement piece hold
-        * Implement menu screen
         */
 
 
@@ -148,12 +147,11 @@ public class GamePanel extends JPanel implements KeyListener{
 
     @Override
     public void keyPressed(KeyEvent arg0) {
-        char key = arg0.getKeyChar();
         int keyCode = arg0.getKeyCode();
 
         switch (screen) {
             case "game":
-                game.keyPressHandler(keyCode);;
+                game.keyPressHandler(keyCode);
                 break;
             
             case "menu": 
@@ -161,7 +159,7 @@ public class GamePanel extends JPanel implements KeyListener{
                 break;
             
             case "scores":
-                scores.keyPressHandler(key);;
+                scores.keyPressHandler(keyCode);
 
             default:
                 break;

@@ -185,6 +185,7 @@ public class Game {
 
             player.playerBoard = new int[boardResolution.x][boardResolution.y];
 
+            player.ableToHold = true;
             player.playerPiece = new Piece(player, pieceList);
             scanForLines(player);
         }
@@ -339,39 +340,41 @@ public class Game {
         }
     }
 
-    public void renderNextPiece(Graphics g, Player player) {
+    public void renderNextPiece(Graphics g, Player player, Vector displayOffset) {
         Vector offset = new Vector(0, 0);
         int[][] nextPieceBoard = new int[4][4];  
         offset = Piece.getNextPiece(nextPieceBoard, pieceList, player.piecePointer);
 
         g.setColor(Color.WHITE);
-        g.fillRect(gamePanel.getWidth() - 7*resolution, resolution*2, resolution*4, resolution*4);
+        g.fillRect(gamePanel.getWidth() - 7*resolution + displayOffset.x, resolution*2 + displayOffset.y, resolution*4, resolution*4);
 
         g.setFont(gamePanel.gameFont.deriveFont(55f));
         g.setColor(Color.WHITE);
 
-        g.drawString("Next", gamePanel.getWidth() - resolution*6 - 16, resolution+32);
+        g.drawString("Next", gamePanel.getWidth() - resolution*6 - 16 + displayOffset.x, resolution+32+displayOffset.y);
         
-        renderBoard(g, nextPieceBoard, new Vector(gamePanel.getWidth()/resolution - 7, 3), offset);
+        renderBoard(g, nextPieceBoard, new Vector(gamePanel.getWidth()/resolution - 7, 3), new Vector(offset.x + displayOffset.x, offset.y + displayOffset.y));
     }
 
-    public void renderHold(Graphics g, Player player) {
+    public void renderHold(Graphics g, Player player, Vector displayOffset) {
         int[][] holdPieceBoard = new int[4][4];
         Vector offset = new Vector(0, 0);
         
-
-
-        offset = Piece.getNextPiece(holdPieceBoard, pieceList, player.piecePointer-1);
-        
         g.setColor(Color.WHITE);
-        g.fillRect(3*resolution, resolution*2, resolution*4, resolution*4);
+        g.fillRect(3*resolution + displayOffset.x, resolution*2 + displayOffset.y, resolution*4, resolution*4);
+
+        if (player.heldPiece != "none") {
+            offset = Piece.getPiece(holdPieceBoard, pieceList, player.heldPiece);
+            renderBoard(g, holdPieceBoard, new Vector(3, 3), new Vector(offset.x + displayOffset.x, offset.y + displayOffset.y));
+        }
+        
 
         g.setFont(gamePanel.gameFont.deriveFont(55f));
         g.setColor(Color.WHITE);
 
-        g.drawString("Hold", resolution*4 -16, resolution+32);
+        g.drawString("Hold", resolution*4 - 16 + displayOffset.x, resolution+32 + displayOffset.y);
         
-        renderBoard(g, holdPieceBoard, new Vector(3, 3), offset);
+        
 
     }
     
@@ -398,8 +401,8 @@ public class Game {
                 g.drawString("Score: "+player1.pointsScore, resolution*22, resolution*17);
                 g.drawString("Level: "+player1.level, 30, resolution*8);  
 
-                renderNextPiece(g, player1);
-                renderHold(g, player1);
+                renderNextPiece(g, player1, new Vector(0, 0));
+                renderHold(g, player1, new Vector(0, 0));
 
                 break;
 
@@ -445,6 +448,22 @@ public class Game {
 
                 g.drawString("Level", gamePanel.getWidth()-resolution*3 - resolution/2, gamePanel.getHeight()-resolution*6);
                 g.drawString(""+player2.level, gamePanel.getWidth()-resolution*3 - resolution/2, gamePanel.getHeight()-resolution*5);
+                
+                renderHold(g, player1, new Vector(-resolution*3, 0));
+                g.setColor(Color.BLACK);
+                g.drawRect(0, resolution*2, resolution*4, resolution*4);
+
+                renderNextPiece(g, player1, new Vector(-resolution*25, resolution*6));
+                g.setColor(Color.BLACK);
+                g.drawRect(0, resolution*8, resolution*4, resolution*4);
+
+                renderHold(g, player2, new Vector(resolution*25, 0));
+                g.setColor(Color.BLACK);
+                g.drawRect(gamePanel.getWidth()-resolution*4, resolution*2, resolution*4, resolution*4);
+
+                renderNextPiece(g, player2, new Vector(resolution*3, resolution*6));
+                g.setColor(Color.BLACK);
+                g.drawRect(gamePanel.getWidth()-resolution*4, resolution*8, resolution*4, resolution*4);
 
 
                 break;
@@ -562,6 +581,23 @@ public class Game {
             player1.rotationDirection = "clockwise";
         }
 
+        if (keyCode == KeyEvent.VK_R && player1.ableToHold) {
+
+            if (player1.heldPiece == "none") {
+                
+                player1.playerPiece = new Piece(player1, pieceList);
+                player1.heldPiece = pieceList[player1.piecePointer-2];
+            } else {
+                String tempString = player1.playerPiece.type;
+                player1.playerPiece.type = player1.heldPiece;
+                player1.heldPiece = tempString;
+                player1.playerPiece.renderPiece();
+                
+            }    
+
+            player1.ableToHold = false;
+        }
+
         //player 2
         if (keyCode == KeyEvent.VK_L) {
             player2.moveDirection = "left";
@@ -586,6 +622,23 @@ public class Game {
 
         if (keyCode == KeyEvent.VK_OPEN_BRACKET) {
             player2.rotationDirection = "clockwise";
+        }
+
+        if (keyCode == KeyEvent.VK_CLOSE_BRACKET && player2.ableToHold) {
+
+            if (player2.heldPiece == "none") {
+                
+                player2.playerPiece = new Piece(player2, pieceList);
+                player2.heldPiece = pieceList[player2.piecePointer-2];
+            } else {
+                String tempString = player2.playerPiece.type;
+                player2.playerPiece.type = player2.heldPiece;
+                player2.heldPiece = tempString;
+                player2.playerPiece.renderPiece();
+                
+            }    
+
+            player2.ableToHold = false;
         }
     }
     

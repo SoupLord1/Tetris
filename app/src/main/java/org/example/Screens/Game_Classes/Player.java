@@ -49,7 +49,8 @@ public class Player {
     public boolean dropPiece = false;
 
     public boolean ableToHold = true;
-
+    public String heldPiece = "none";
+    
     Game game;
 
     public Player(Game game) {

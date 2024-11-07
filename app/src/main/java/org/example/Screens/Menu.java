@@ -148,6 +148,14 @@ public class Menu {
                 case 2:
                     gamePanel.screen = "game";
                     gamePanel.game = new Game(gamePanel, "2 player");
+                    break;
+
+                case 3:
+                    gamePanel.screen = "scores";
+                    gamePanel.scores = new Scores(gamePanel);
+                    break;
+
+
                 default:
                     break;
             }
