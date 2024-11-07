@@ -3,80 +3,95 @@ package org.example.Screens;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.FileWriter;
-import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Scanner;
 
 import org.example.GamePanel;
 import org.example.Tetris;
 import org.example.Custom.CustomColors;
+import org.example.Utils.ScoreManager;
 import org.example.Utils.Vector;
 
-import com.google.gson.reflect.TypeToken;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+public class Scores implements Screen {
 
-public class Scores {
-
-    private Vector buttonSize = new Vector(800, 200);
-    private Vector buttonLocation = new Vector((Tetris.screenSize.x/2) - (buttonSize.x/2), 400);
-    private Vector buttonTextOffset = new Vector(135, 135);
-    private int buttonYDistance = 250;
-
-    private int buttonSelected;
-
-    private int flashCooldown = 0;
-    private final int defaultFlashCooldown = 128;
-    private boolean flashOn = false;
-
-    private String defaultJson = "{\"0\":{\"------\":0},\"1\":{\"------\":0},\"2\":{\"------\":0},\"3\":{\"------\":0},\"4\":{\"------\":0}}\n";
-
-    Scanner scanner;
-    FileWriter fileWriter;
-    File scoresFile;
-    String json;
+    private final static int resolution = 64;
+        private Vector buttonSize = new Vector(800, 200);
+        private Vector buttonLocation = new Vector((Tetris.screenSize.x/2) - (buttonSize.x/2), 400);
+        private Vector buttonTextOffset = new Vector(135, 135);
+        private int buttonYDistance = 250;
+    
+        private int buttonSelected;
+    
+        private int flashCooldown = 0;
+        private final int defaultFlashCooldown = 128;
+        private boolean flashOn = false;
     
     
-    private Gson gson = new GsonBuilder().create();
-    private HashMap<Integer, HashMap<String, Integer>> scores = new HashMap<Integer, HashMap<String, Integer>>();
 
-    public GamePanel gamePanel;
+        
+        
 
+        private HashMap<Integer, HashMap<String, int[]>> scores = new HashMap<Integer, HashMap<String, int[]>>();
+    
+        ArrayList<ScoreDisplay> scoreDisplays = new ArrayList<ScoreDisplay>();
+    
+        public GamePanel gamePanel;
+    
+    
+        public Scores(GamePanel gamePanel) {
+            this.gamePanel = gamePanel;
+            buttonSelected = 1;
+    
+            ScoreManager scoreManager = new ScoreManager();
 
-    public Scores(GamePanel gamePanel) {
-        this.gamePanel = gamePanel;
-        buttonSelected = 1;
+            scores = scoreManager.getScores();
 
-        try {
-            scoresFile = new File(GamePanel.dataPath+"scores.json");
+            HashMap<String, int[]> testScore = scoreManager.newScore("eeee", 500, 0);
 
-            if (!scoresFile.exists()) {
-                scoresFile.createNewFile();
-                fileWriter = new FileWriter(scoresFile);
-                fileWriter.write(defaultJson);
-                fileWriter.close();
+            scoreManager.checkForNewHighscore(testScore);
+    
+            for (int i = 0; i < scores.size(); i++) {
+                String tempString = (String) scores.get(i).keySet().toArray()[0];
+                int tempScore = scores.get(i).get(tempString)[0];
+                int tempLevel = scores.get(i).get(tempString)[1];
+                ScoreDisplay tempScoreDisplay = new ScoreDisplay(tempString, tempScore, tempLevel, new Vector(gamePanel.getWidth()/2-resolution*20/2, (resolution*2+8)*i + 176));
+                scoreDisplays.add(tempScoreDisplay);
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
+    
         }
         
-        try {
-            Scanner scanner = new Scanner(scoresFile);
-            json = scanner.nextLine();
-            scanner.close();
+        class ScoreDisplay {
+            public String name;
+            public int score;
+            public int level;
+            public Vector location;
+    
+            public ScoreDisplay(String name, int score, int level, Vector location) {
+                this.name = name;
+                this.score = score;
+                this.level = level;
+                this.location = location;
+            }
+    
+            public void draw(Graphics g) {
+                g.setColor(CustomColors.redOxide);
+                g.fillRect(location.x, location.y, resolution*20, resolution*2);
+                g.setFont(gamePanel.gameFont.deriveFont(80f));
+                g.setColor(Color.WHITE);
+                String scorePadding = "";
+                for (int i = 0; i < 6 - new String(""+score).length(); i++) {
+                    scorePadding += "0";
+                }
+                String levelPadding = "";
+                for (int i = 0; i < 2 - new String(""+level).length(); i++) {
+                    levelPadding += "0";
+                }
+                g.drawString(name, location.x+32, location.y+96);
+                g.drawString(scorePadding+score, location.x+resolution*7, location.y+96);
+                g.drawString(levelPadding+level, location.x+resolution*14, location.y+96);
+            }  
 
-            Type type = new TypeToken<HashMap<Integer, HashMap<String, Integer>>>(){}.getType();
-            scores = gson.fromJson(json, type);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        System.out.println(scores.get(0).keySet()+":"+scores.get(0).values());
     }
-        
 
     public void update() {
         if (flashCooldown == 0){
@@ -102,6 +117,17 @@ public class Scores {
         }
     }
 
+    public void drawLabel(Graphics g, Vector location) {
+        g.fillRect(location.x, location.y, resolution*20, resolution*2);
+        g.setColor(CustomColors.redOxide);
+        g.fillRect(location.x, location.y, resolution*20, resolution*2);
+        g.setFont(gamePanel.gameFont.deriveFont(80f));
+        g.setColor(Color.WHITE);
+        g.drawString("Name", location.x+32, location.y+96);
+        g.drawString("Score", location.x+resolution*7, location.y+96);
+        g.drawString("Level", location.x+resolution*14, location.y+96);
+
+    }
 
     public void draw(Graphics g) {
         g.setColor(CustomColors.sangria);
@@ -117,6 +143,11 @@ public class Scores {
         g.setColor(Color.WHITE);
         g.drawString("Back", buttonLocation.x + buttonTextOffset.x + 110, buttonLocation.y + buttonTextOffset.y + buttonYDistance*2);
 
+        drawLabel(g, new Vector(gamePanel.getWidth()/2-resolution*20/2, 40));
+
+        for (ScoreDisplay display : scoreDisplays) {
+            display.draw(g);
+        }
         
     }
 

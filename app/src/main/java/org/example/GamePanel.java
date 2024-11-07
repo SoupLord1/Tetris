@@ -13,6 +13,7 @@ import java.util.HashMap;
 import javax.swing.JPanel;
 
 import org.example.Screens.Game;
+import org.example.Screens.Highscore;
 import org.example.Screens.Menu;
 import org.example.Screens.Scores;
 import org.example.Utils.ImageProcessor;
@@ -55,18 +56,19 @@ public class GamePanel extends JPanel implements KeyListener{
 
     public Game game = new Game(this, "1 player");
 
+    public Highscore highscore = new Highscore(this);
+
     public Scores scores =  new Scores(this);
 
     /*  BUG
         *  When rotation next to another piece it will phase into the neighbor pieces.
-        */
+        *  Adding new highscore clears all scores
+    */
 
     /* TODO
-        * Implement score screen
-        * # Display scores on screen
         * Implement score update on game over
         * Implement game over and reset
-        */
+    */
 
 
     public GamePanel() {
@@ -107,6 +109,9 @@ public class GamePanel extends JPanel implements KeyListener{
             case "scores":
                 scores.update();
 
+            case "highscore":
+                highscore.update();
+
             default:
                 break;
         }
@@ -137,7 +142,12 @@ public class GamePanel extends JPanel implements KeyListener{
             
             case "scores":
                 scores.draw(g);
+                break;
 
+            case "highscore":
+                highscore.draw(g);
+                break;
+            
             default:
                 break;
         }
@@ -160,6 +170,11 @@ public class GamePanel extends JPanel implements KeyListener{
             
             case "scores":
                 scores.keyPressHandler(keyCode);
+                break;
+
+            case "highscore":
+                highscore.keyPressHandler(keyCode);
+                break;
 
             default:
                 break;
@@ -170,7 +185,6 @@ public class GamePanel extends JPanel implements KeyListener{
 
     @Override
     public void keyReleased(KeyEvent arg0) {
-        char key = arg0.getKeyChar();
         int keyCode = arg0.getKeyCode();
 
         switch (screen) {
@@ -183,7 +197,12 @@ public class GamePanel extends JPanel implements KeyListener{
                 break;
             
             case "scores":
-                scores.keyReleasedHandler(key);
+                scores.keyReleasedHandler(keyCode);
+                break;
+
+            case "highscore":
+                highscore.keyReleasedHandler(keyCode);
+                break;
 
             default:
                 break;

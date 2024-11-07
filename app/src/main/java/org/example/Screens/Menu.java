@@ -10,7 +10,7 @@ import org.example.Tetris;
 import org.example.Custom.CustomColors;
 import org.example.Utils.Vector;
 
-public class Menu {
+public class Menu implements Screen {
     private GamePanel gamePanel;
 
     private Vector titleLocation = new Vector(700, 300);
