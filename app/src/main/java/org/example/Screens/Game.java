@@ -477,6 +477,29 @@ public class Game {
      
     }
     
+    public void checkForNewHighscore() {
+        int points;
+        int level;
+        if (player1.pointsScore > player2.pointsScore) {
+            points = player1.pointsScore;
+            level = player1.level;
+            gamePanel.highscore = new Highscore(gamePanel, player1);
+        } else {
+            points = player2.pointsScore;
+            level = player2.level;
+            gamePanel.highscore = new Highscore(gamePanel, player2);
+        }
+        HashMap<String, int[]> newScore = scoreManager.newScore("------", points, level);
+        boolean newHighscore = scoreManager.checkForNewHighscore(newScore, false);
+        
+        if (newHighscore) {
+            gamePanel.screen = "highscore";
+        } else {
+            gamePanel.screen = "menu";
+        }
+
+    }
+
     public void update() {
 
 
@@ -490,15 +513,7 @@ public class Game {
             for(int i = 0; i < player1.gameBoard.length - 1; i++) {
                 if (player1.gameBoard[i][1] != 0 || player1.gameBoard[i][1] != 0) {
                     gameOver = true;
-                    HashMap<String, int[]> newScore = scoreManager.newScore("test", player1.pointsScore, player1.level);
-                    boolean newHighscore = scoreManager.checkForNewHighscore(newScore);
-                    
-                    if (newHighscore) {
-                        gamePanel.screen = "highscore";
-                    } else {
-                        gamePanel.screen = "menu";
-                    }
-
+                    checkForNewHighscore();
                     break;
                 }
             }
@@ -535,7 +550,7 @@ public class Game {
                 for(int i = 0; i < player2.gameBoard.length - 1; i++) {
                     if (player2.gameBoard[i][1] != 0 || player2.gameBoard[i][1] != 0) {
                         gameOver = true;
-                        gamePanel.screen = "menu";
+                        checkForNewHighscore();
                     }
                 }
     

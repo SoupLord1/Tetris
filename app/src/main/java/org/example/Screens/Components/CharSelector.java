@@ -65,6 +65,7 @@ public class CharSelector implements Component {
     @Override
     public void update() {
         if (!selected) {
+            flashOn = true;
             return;
         }
 

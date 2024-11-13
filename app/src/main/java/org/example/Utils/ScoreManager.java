@@ -85,7 +85,7 @@ public class ScoreManager {
         setScores(scores);
     }
 
-    public boolean checkForNewHighscore(HashMap<String, int[]> score) {
+    public boolean checkForNewHighscore(HashMap<String, int[]> score, boolean save) {
         HashMap<Integer, HashMap<String, int[]>> scores = getScores();
         int highscorePointer = 0;
 
@@ -107,8 +107,7 @@ public class ScoreManager {
         // if number is lower than everything it will override id:0
 
 
-
-        if (newHighscore) {
+        if (newHighscore && save) {
             System.out.println(((int[])scores.get(highscorePointer).values().toArray()[0])[0]);
             for (int i = 4; i > highscorePointer; i--) {
                 scores.put(i, scores.get(i-1));
@@ -118,6 +117,7 @@ public class ScoreManager {
     
             setScores(scores);
         }
+        
         return newHighscore;
     }
 }

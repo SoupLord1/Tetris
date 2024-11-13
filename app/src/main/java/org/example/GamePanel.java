@@ -16,6 +16,7 @@ import org.example.Screens.Game;
 import org.example.Screens.Highscore;
 import org.example.Screens.Menu;
 import org.example.Screens.Scores;
+import org.example.Screens.Game_Classes.Player;
 import org.example.Utils.ImageProcessor;
 
 public class GamePanel extends JPanel implements KeyListener{
@@ -34,7 +35,7 @@ public class GamePanel extends JPanel implements KeyListener{
     public static String pixelmixFontPath = fontPath+"pixelmix.ttf";
     public static String pixelmixBoldFontPath = fontPath+"pixelmix_bold.ttf";
 
-    public String screen = "highscore"; // menu/game/scores/highscore
+    public String screen = "menu"; // menu/game/scores/highscore
 
     public Font gameFont;
     Font gameFontBold;
@@ -56,7 +57,7 @@ public class GamePanel extends JPanel implements KeyListener{
 
     public Game game = new Game(this, "1 player");
 
-    public Highscore highscore = new Highscore(this);
+    public Highscore highscore = new Highscore(this, new Player(game));
 
     public Scores scores =  new Scores(this);
 
