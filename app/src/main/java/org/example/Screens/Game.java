@@ -5,6 +5,7 @@ import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.example.GamePanel;
 import org.example.Screens.Game_Classes.Line;
@@ -28,6 +29,9 @@ public class Game {
     private GamePanel gamePanel;
     private String mode;
     
+
+    private ScoreManager scoreManager = new ScoreManager();
+
     public Game(GamePanel gamePanel, String mode){
             this.gamePanel = gamePanel;
             this.mode = mode;
@@ -486,7 +490,16 @@ public class Game {
             for(int i = 0; i < player1.gameBoard.length - 1; i++) {
                 if (player1.gameBoard[i][1] != 0 || player1.gameBoard[i][1] != 0) {
                     gameOver = true;
-                    gamePanel.screen = "menu";
+                    HashMap<String, int[]> newScore = scoreManager.newScore("test", player1.pointsScore, player1.level);
+                    boolean newHighscore = scoreManager.checkForNewHighscore(newScore);
+                    
+                    if (newHighscore) {
+                        gamePanel.screen = "highscore";
+                    } else {
+                        gamePanel.screen = "menu";
+                    }
+
+                    break;
                 }
             }
 

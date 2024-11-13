@@ -1,32 +1,98 @@
 package org.example.Screens;
 
+import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 
 import org.example.GamePanel;
+import org.example.Custom.CustomColors;
+import org.example.Screens.Components.CharSelector;
+import org.example.Utils.Vector;
 
 public class Highscore implements Screen {
 
     GamePanel gamePanel;
+    
+    ArrayList<CharSelector> charSelectors = new ArrayList<CharSelector>();
+
+    int charSelectorSelected = 0;
 
     public Highscore(GamePanel gamePanel) {
         this.gamePanel = gamePanel;
+
+        for (int i = 0; i < 6; i++) {
+            charSelectors.add(new CharSelector(new Vector(i*256+64*4, 64 * 7), new Vector(64*3, 64*3), false));
+        }
+        for (CharSelector charSelector : charSelectors) {
+            charSelector.setChar('-');
+        }
+
+        charSelectors.get(0).selected = true;
     }
 
     @Override
     public void update() {
-        // TODO Auto-generated method stub
+        for (CharSelector charSelector : charSelectors) {
+            charSelector.update();
+        }
 
     }
 
     @Override
     public void draw(Graphics g) {
-        // TODO Auto-generated method stub
+        g.setColor(CustomColors.sangria);
+        g.fillRect(0, 0, gamePanel.getWidth(), gamePanel.getHeight());
 
+
+
+        for (CharSelector charSelector : charSelectors) {
+            charSelector.setFont(gamePanel.gameFont.deriveFont(128f));
+            charSelector.draw(g);
+        }
+
+        g.setFont(gamePanel.gameFont.deriveFont(196f));
+
+        g.setColor(Color.BLACK);
+        g.drawString("NEW HIGHSCORE", 64*2 - 10, 64*9/2);
+        g.setColor(Color.WHITE);
+        g.drawString("NEW HIGHSCORE", 64*2, 64*9/2);
     }
 
     @Override
     public void keyPressHandler(int keyCode) {
-        // TODO Auto-generated method stub
+        for (CharSelector charSelector : charSelectors) {
+            charSelector.keyPressHandler(keyCode);
+        }
+
+        if (keyCode == KeyEvent.VK_D || keyCode == KeyEvent.VK_RIGHT) {
+
+            charSelectors.get(charSelectorSelected).selected = false;
+
+            if (charSelectorSelected == charSelectors.size() - 1) {
+                charSelectorSelected = 0;
+            } else {
+                charSelectorSelected++;
+            }
+
+            charSelectors.get(charSelectorSelected).selected = true;
+
+        }
+
+        if (keyCode == KeyEvent.VK_A || keyCode == KeyEvent.VK_LEFT) {
+
+            charSelectors.get(charSelectorSelected).selected = false;
+
+            if (charSelectorSelected == 0) {
+                charSelectorSelected = charSelectors.size() - 1;
+            } else {
+                charSelectorSelected--;
+            }
+
+            charSelectors.get(charSelectorSelected).selected = true;
+
+        }
+
 
     }
 

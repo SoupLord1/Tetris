@@ -21,8 +21,6 @@ public class ScoreManager {
     File scoresFile;
     String json;
     HashMap<Integer, HashMap<String, int[]>> scores;
-    
-
 
 
     public ScoreManager() {
@@ -87,37 +85,39 @@ public class ScoreManager {
         setScores(scores);
     }
 
-    public void checkForNewHighscore(HashMap<String, int[]> score) {
+    public boolean checkForNewHighscore(HashMap<String, int[]> score) {
         HashMap<Integer, HashMap<String, int[]>> scores = getScores();
+        int highscorePointer = 0;
 
-        for (int i = 0; i < getScores().size(); i++) {
-            String key1 = (String) scores.get(i).keySet().toArray()[0];
-            String key2 = (String) score.keySet().toArray()[0];
-            HashMap<String, int[]> scoreBuffer = new HashMap<String, int[]>();
-            if(scores.get(i).get(key1)[0] < score.get(key2)[0]) {
-                for (int j = i; j > 0; j--) {
-                    if (j == 0) {
-                        continue;
-                    }
-                    scoreBuffer = scores.get(j);
-                    scores.put(j-1, scoreBuffer);
-                }
-                scores.put(i, score);
-                setScores(scores);
+        boolean newHighscore = false;
+
+        for (int i = 0; i < scores.size(); i++) {
+            HashMap<String, int[]> scoreBuffer = scores.get(i);
+            int[] playerData = (int[]) scoreBuffer.values().toArray()[0];
+            int[] newPlayerData = (int[]) score.values().toArray()[0];
+            if (newPlayerData[0] > playerData[0]) {
+                System.out.println("New Highscore");
+                highscorePointer = i;
+                newHighscore = true;
                 break;
             }
+        } 
+
+
+        // if number is lower than everything it will override id:0
+
+
+
+        if (newHighscore) {
+            System.out.println(((int[])scores.get(highscorePointer).values().toArray()[0])[0]);
+            for (int i = 4; i > highscorePointer; i--) {
+                scores.put(i, scores.get(i-1));
+            }
+    
+            scores.put(highscorePointer, score);
+    
+            setScores(scores);
         }
-
-        
-        // for (int i = 0; i < scores.size(); i++) {
-
-        //     int currentScore = (int) getScores().get(0).values().toArray()[0];
-        //     int newScore = (int) score.values().toArray()[0];
-
-        //     if (currentScore < newScore) {
-        //         scores.put(i, score);
-        //         setScores(scores);
-        //     }            
-        // }
+        return newHighscore;
     }
 }

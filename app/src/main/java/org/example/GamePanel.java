@@ -34,7 +34,7 @@ public class GamePanel extends JPanel implements KeyListener{
     public static String pixelmixFontPath = fontPath+"pixelmix.ttf";
     public static String pixelmixBoldFontPath = fontPath+"pixelmix_bold.ttf";
 
-    public String screen = "menu"; // menu/game/scores
+    public String screen = "highscore"; // menu/game/scores/highscore
 
     public Font gameFont;
     Font gameFontBold;

@@ -45,10 +45,6 @@ public class Scores implements Screen {
             ScoreManager scoreManager = new ScoreManager();
 
             scores = scoreManager.getScores();
-
-            HashMap<String, int[]> testScore = scoreManager.newScore("eeee", 500, 0);
-
-            scoreManager.checkForNewHighscore(testScore);
     
             for (int i = 0; i < scores.size(); i++) {
                 String tempString = (String) scores.get(i).keySet().toArray()[0];
