@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -12,6 +13,11 @@ import org.example.Screens.Game_Classes.Line;
 import org.example.Screens.Game_Classes.Piece;
 import org.example.Screens.Game_Classes.Player;
 import org.example.Utils.*;
+
+import jaco.mp3.a.F;
+import jaco.mp3.player.MP3Player;
+
+
 
 public class Game {
 
@@ -32,12 +38,20 @@ public class Game {
 
     private ScoreManager scoreManager = new ScoreManager();
 
+    private MP3Player musicPlayer = new MP3Player();
+
     public Game(GamePanel gamePanel, String mode){
             this.gamePanel = gamePanel;
             this.mode = mode;
             Piece.GeneratePieceList(pieceList);
             player1.start();
             player2.start();
+
+            if (gamePanel.screen == "game") {
+                musicPlayer.addToPlayList(new File(GamePanel.resourcePath + "audio/gamerip/04 Tetris Music 1.mp3"));
+                musicPlayer.setRepeat(true);
+                musicPlayer.play();
+            }
             
     }
 
@@ -224,18 +238,25 @@ public class Game {
             }
             
         }
-
+        //
         if (player.allLines.size() == 1) {
             player.pointsScore += 40 * (player.level + 1);
+            new MP3Player(new File(GamePanel.resourcePath + "audio/gamerip/32 Unused Sound.mp3")).play();
+
 
         } else if (player.allLines.size() == 2) {
             player.pointsScore += 100 * (player.level + 1);
+            new MP3Player(new File(GamePanel.resourcePath + "audio/gamerip/32 Unused Sound.mp3")).play();
+
 
         } else if (player.allLines.size() == 3) {
             player.pointsScore += 300 * (player.level + 1);
+            new MP3Player(new File(GamePanel.resourcePath + "audio/gamerip/32 Unused Sound.mp3")).play();
+
 
         } else if (player.allLines.size() == 4) {
             player.pointsScore += 1200 * (player.level + 1);
+            new MP3Player(new File(GamePanel.resourcePath + "audio/gamerip/33 Tetris!.mp3")).play();
 
         }
 
@@ -480,23 +501,30 @@ public class Game {
     public void checkForNewHighscore() {
         int points;
         int level;
+        Player bestPlayer = new Player(null);
+
         if (player1.pointsScore > player2.pointsScore) {
             points = player1.pointsScore;
             level = player1.level;
-            gamePanel.highscore = new Highscore(gamePanel, player1);
+            bestPlayer = player1;
+
         } else {
             points = player2.pointsScore;
             level = player2.level;
-            gamePanel.highscore = new Highscore(gamePanel, player2);
+            bestPlayer = player2;
         }
         HashMap<String, int[]> newScore = scoreManager.newScore("------", points, level);
         boolean newHighscore = scoreManager.checkForNewHighscore(newScore, false);
         
         if (newHighscore) {
             gamePanel.screen = "highscore";
+            gamePanel.highscore = new Highscore(gamePanel, bestPlayer);
         } else {
             gamePanel.screen = "menu";
+            gamePanel.menu = new Menu(gamePanel);
         }
+
+        musicPlayer.stop();
 
     }
 

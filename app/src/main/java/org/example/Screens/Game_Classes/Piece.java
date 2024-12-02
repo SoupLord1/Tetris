@@ -2,7 +2,11 @@ package org.example.Screens.Game_Classes;
 
 import java.util.Random;
 
+import org.example.GamePanel;
 import org.example.Utils.Vector;
+import java.io.File;
+
+import jaco.mp3.player.MP3Player;
 
 public class Piece {
         
@@ -11,6 +15,7 @@ public class Piece {
     public int[] translations = {0,0};
     public String type;
     public int rotation = 0;
+    public int previous_rotation = 0;
     Player player;
 
 
@@ -56,6 +61,8 @@ public class Piece {
     public void renderPiece(){
         int color = 8418457;
         int[][] newRotation = new int[4][4];
+
+
         
         //changes the rotation of a piece
         if (type == "l-block") {
@@ -87,19 +94,22 @@ public class Piece {
             newRotation = tBlockRotations[rotation];
         }
 
+        
         //resets the playboard for the new piece rotation
 
         player.playerBoard = new int[boardResolution.x][boardResolution.y];
 
         //adds the coordinate translations to the piece to put it in the correct spot
+        
         player.playerBoard[newRotation[0][0]+translations[0]][newRotation[0][1]+translations[1]] = color;
         player.playerBoard[newRotation[1][0]+translations[0]][newRotation[1][1]+translations[1]] = color;
         player.playerBoard[newRotation[2][0]+translations[0]][newRotation[2][1]+translations[1]] = color;
         player.playerBoard[newRotation[3][0]+translations[0]][newRotation[3][1]+translations[1]] = color;
+
     }
 
     public String rotatePiece(String direction){
-
+        previous_rotation = rotation;
         boolean allowedToRotateClockwise = true;
         boolean allowedToRotateCounterClockwise = true;
 
@@ -109,13 +119,13 @@ public class Piece {
 
         if (translations[1] < 0) {
             allowedToRotateCounterClockwise = false;
-            allowedToRotateClockwise = false;;
+            allowedToRotateClockwise = false;
         }
 
         if (type == "t-block" || type == "squigly" || type == "reverse-squigly" || type == "reverse-l-block" || type == "l-block" ) {
             if (translations[0] == -5 || translations[0] == 4) {
                 allowedToRotateCounterClockwise = false;
-                allowedToRotateClockwise = false;;
+                allowedToRotateClockwise = false;
             }
         }
 
@@ -198,7 +208,7 @@ public class Piece {
             }
         }
 
-
+        new MP3Player(new File(GamePanel.resourcePath + "audio/sounds/click_selection_menu.mp3")).play();
 
         renderPiece();
         return "none";

@@ -3,6 +3,7 @@ package org.example.Screens;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -13,6 +14,8 @@ import org.example.Screens.Game_Classes.Player;
 import org.example.Utils.ScoreManager;
 import org.example.Utils.Vector;
 
+import jaco.mp3.player.MP3Player;
+
 public class Highscore implements Screen {
 
     GamePanel gamePanel;
@@ -22,6 +25,8 @@ public class Highscore implements Screen {
     ArrayList<CharSelector> charSelectors = new ArrayList<CharSelector>();
 
     int charSelectorSelected = 0;
+
+    private MP3Player musicPlayer = new MP3Player();
 
     public Highscore(GamePanel gamePanel, Player player) {
         this.gamePanel = gamePanel;
@@ -35,6 +40,12 @@ public class Highscore implements Screen {
         }
 
         charSelectors.get(0).selected = true;
+
+        if (gamePanel.screen == "highscore") {
+            musicPlayer.addToPlayList(new File(GamePanel.resourcePath + "audio/gamerip/11 Tetris High Score.mp3"));
+            musicPlayer.setRepeat(true);
+            musicPlayer.play();
+        }
     }
 
     @Override
@@ -75,7 +86,9 @@ public class Highscore implements Screen {
 
         HashMap<String, int[]> newHighscore = scoreManager.newScore(name, player.pointsScore, player.level);
         scoreManager.checkForNewHighscore(newHighscore, true);
+        musicPlayer.stop();
         gamePanel.screen = "menu";
+        gamePanel.menu = new Menu(gamePanel);
         
     }
 

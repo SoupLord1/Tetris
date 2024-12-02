@@ -14,7 +14,7 @@ import com.google.gson.reflect.TypeToken;
 
 public class ScoreManager {
     private Gson gson = new GsonBuilder().create();
-    private String defaultJson = "{\"0\":{\"------\":[0, 0]},\"1\":{\"------\":[0, 0]},\"2\":{\"------\":[0, 0]},\"3\":{\"------\":[0, 0]},\"4\":{\"------\":[0, 0]}}\n";
+    private String defaultJson = "{\"0\":{\"SOUP  \":[30600,6]},\"1\":{\"------\":[0, 0]},\"2\":{\"------\":[0, 0]},\"3\":{\"------\":[0, 0]},\"4\":{\"------\":[0, 0]}}\n";
 
     Scanner scanner;
     FileWriter fileWriter;

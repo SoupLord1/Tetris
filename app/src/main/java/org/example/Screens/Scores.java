@@ -157,7 +157,6 @@ public class Scores implements Screen {
             switch (buttonSelected) {
                 case 1:
                     gamePanel.screen = "menu";
-                    gamePanel.menu = new Menu(gamePanel);
                     break;
             
                 default:

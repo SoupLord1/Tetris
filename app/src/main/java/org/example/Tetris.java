@@ -11,9 +11,10 @@ import java.awt.event.ActionListener;
 public class Tetris extends JFrame {
     private static int resolution = 64;
 
-    public static final Vector screenSize = new Vector(resolution * 32, (resolution * 19));
+    public static final Vector screenSize = new Vector(resolution * 32, (resolution * 19 + 32));
 
     public Tetris() {
+        
         setTitle("Tetris");
         setSize(screenSize.x, screenSize.y);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

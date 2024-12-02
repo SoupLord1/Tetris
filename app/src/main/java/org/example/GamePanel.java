@@ -6,6 +6,7 @@ import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +19,8 @@ import org.example.Screens.Menu;
 import org.example.Screens.Scores;
 import org.example.Screens.Game_Classes.Player;
 import org.example.Utils.ImageProcessor;
+
+import jaco.mp3.player.MP3Player;
 
 public class GamePanel extends JPanel implements KeyListener{
 

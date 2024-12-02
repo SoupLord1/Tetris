@@ -3,12 +3,14 @@ package org.example.Screens;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
-
+import java.io.File;
 
 import org.example.GamePanel;
 import org.example.Tetris;
 import org.example.Custom.CustomColors;
 import org.example.Utils.Vector;
+
+import jaco.mp3.player.MP3Player;
 
 public class Menu implements Screen {
     private GamePanel gamePanel;
@@ -25,11 +27,18 @@ public class Menu implements Screen {
     private final int defaultFlashCooldown = 128;
     private boolean flashOn = false;
     
+    private MP3Player musicPlayer = new MP3Player();
 
     
     public Menu(GamePanel gamePanel) {
         this.gamePanel = gamePanel;
         buttonSelected = 1;
+
+        if (gamePanel.screen == "menu") {
+            musicPlayer.addToPlayList(new File(GamePanel.resourcePath + "audio/gamerip/01 Main Title.mp3"));
+            musicPlayer.setRepeat(true);
+            musicPlayer.play();
+        }
     }
 
     public void update() {
@@ -116,6 +125,7 @@ public class Menu implements Screen {
             }
             flashOn = true;
             flashCooldown = defaultFlashCooldown;
+            new MP3Player(new File(GamePanel.resourcePath + "audio/sounds/click_selection_menu.mp3")).play();
         }
 
         if (keyCode == KeyEvent.VK_DOWN || keyCode == KeyEvent.VK_S) {
@@ -133,7 +143,9 @@ public class Menu implements Screen {
             }
             flashOn = true;
             flashCooldown = defaultFlashCooldown;
-        }
+            new MP3Player(new File(GamePanel.resourcePath + "audio/sounds/click_selection_menu.mp3")).play();
+
+        }   
     }
 
     public void keyReleasedHandler(int keyCode){
@@ -143,11 +155,13 @@ public class Menu implements Screen {
                 case 1:
                     gamePanel.screen = "game";
                     gamePanel.game = new Game(gamePanel, "1 player");
+                    musicPlayer.stop();
                     break;
 
                 case 2:
                     gamePanel.screen = "game";
                     gamePanel.game = new Game(gamePanel, "2 player");
+                    musicPlayer.stop();
                     break;
 
                 case 3:
@@ -159,6 +173,7 @@ public class Menu implements Screen {
                 default:
                     break;
             }
+
         }
     }
 }
